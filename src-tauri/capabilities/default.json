@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "desktop",
+  "description": "Local desktop windows",
+  "windows": ["main", "widget", "rest-*", "preview", "warning"],
+  "permissions": ["core:default", "core:window:allow-start-dragging"]
+}

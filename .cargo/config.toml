@@ -1,0 +1,10 @@
+# Project-local sparse mirror. No global Cargo configuration is changed.
+# Remove these source sections to use crates.io directly.
+[source.crates-io]
+replace-with = "rsproxy-sparse"
+
+[source.rsproxy-sparse]
+registry = "sparse+https://rsproxy.cn/index/"
+
+[net]
+retry = 2

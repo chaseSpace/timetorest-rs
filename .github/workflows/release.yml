@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Validate release tag
+        run: node -e "const v=require('./package.json').version; if(process.env.GITHUB_REF_NAME!=='v'+v) throw new Error('Tag/version mismatch')"
+      - name: Use crates.io on the hosted runner
+        run: node -e "require('fs').rmSync('.cargo/config.toml')"
+      - run: npm ci
+      - name: Build portable executable
+        run: npm run build
+      - name: Build NSIS installer
+        run: npm run build:installer
+      - name: Publish complete release
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { pathToFileURL } = require('node:url');
+            const path = require('node:path');
+            const moduleUrl = pathToFileURL(path.join(process.env.GITHUB_WORKSPACE, '.github/scripts/publish-release.mjs'));
+            const { default: publish } = await import(moduleUrl.href);
+            await publish({ github, context, core });

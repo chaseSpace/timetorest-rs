@@ -1,0 +1,27 @@
+{
+  "name": "leafshield",
+  "version": "0.5.4",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420 --strictPort",
+    "desktop": "node scripts/build.mjs dev",
+    "build:web": "tsc --noEmit && vite build",
+    "build": "node scripts/build.mjs portable",
+    "build:installer": "node scripts/build.mjs installer",
+    "check:rust": "node scripts/build.mjs check",
+    "test:rust": "node scripts/build.mjs test",
+    "test:ui": "npm run build:web && playwright test",
+    "smoke": "node scripts/build.mjs smoke"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@tauri-apps/cli": "^2.12.4",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2"
+  }
+}

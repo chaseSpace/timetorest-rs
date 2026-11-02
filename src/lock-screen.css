@@ -1,0 +1,231 @@
+.lock-body {
+  background: #12191e;
+  color: #fff;
+  overflow: hidden;
+  color-scheme: dark;
+}
+.lock-body,
+.lock-body * {
+  cursor: none !important;
+}
+.lock-screen {
+  height: 100dvh;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.lock-photo,
+.lock-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+.lock-photo {
+  object-fit: cover;
+}
+.lock-shade {
+  background: #08101670;
+}
+.lock-header,
+.lock-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 22px 32px;
+  color: #ffffffe0;
+}
+.lock-header {
+  font-size: 16px;
+}
+.lock-header small {
+  margin-left: 10px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  opacity: 0.7;
+}
+.lock-header button {
+  border: 1px solid #ffffff70;
+  border-radius: 4px;
+  padding: 7px 12px;
+  font-size: 12px;
+  color: white;
+}
+.lock-header button:hover {
+  background: #ffffff20;
+}
+.lock-status {
+  font-size: 12px;
+}
+.lock-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 12px 20px;
+}
+.lock-content h1 {
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 6px;
+  text-shadow: 0 1px 12px #0008;
+}
+.lock-timer {
+  font:
+    96px/1.15 "Segoe UI",
+    sans-serif;
+  font-weight: 200;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 3px;
+  margin: 9px 0;
+  text-shadow: 0 1px 16px #0006;
+}
+.lock-hint {
+  font-size: 14px;
+  color: #ffffffe0;
+  margin-bottom: 30px;
+}
+.lock-unlock {
+  width: min(480px, 100%);
+  background: #0e192acc;
+  border: 1px solid #ffffff38;
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+.lock-unlock.is-idle {
+  opacity: 0;
+  pointer-events: none;
+}
+.lock-instruction {
+  font-size: 12px;
+  color: #ffffffc4;
+}
+.lock-unlock blockquote {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 10px 0 12px;
+  color: white;
+}
+.lock-unlock input {
+  -webkit-user-select: text;
+  user-select: text;
+  width: 100%;
+  height: 36px;
+  border: 1px solid #ffffff75;
+  border-radius: 4px;
+  padding: 0 10px;
+  background: #0a112a66;
+  color: white;
+  font-size: 13px;
+}
+.lock-unlock input::placeholder {
+  color: #ffffff99;
+}
+.lock-unlock input[aria-invalid="true"] {
+  border-bottom-color: #ff8088;
+  box-shadow: inset 0 -2px #ff8088;
+}
+#unlock-progress.is-mismatch {
+  color: #ff9da3;
+}
+.lock-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #ffffffad;
+}
+.lock-actions button {
+  background: #e4f2ff;
+  color: #173b51;
+  border-radius: 4px;
+  padding: 7px 18px;
+  font-size: 12px;
+}
+.lock-emergency-toggle {
+  font-size: 11px;
+  color: #ffffffc4;
+  margin-top: 14px;
+  padding: 4px 10px;
+}
+.lock-emergency {
+  max-width: 480px;
+  width: 100%;
+  font-size: 11px;
+  line-height: 1.6;
+  color: white;
+  background: #102036ed;
+  border-radius: 4px;
+  padding: 10px 14px;
+}
+.lock-emergency progress {
+  width: calc(100% - 64px);
+  height: 7px;
+  margin-right: 12px;
+  accent-color: #95cfee;
+}
+.lock-emergency b {
+  font-weight: 400;
+}
+.lock-footer {
+  font-size: 11px;
+  padding-top: 12px;
+  padding-bottom: 18px;
+  color: #ffffffb0;
+}
+@media (max-height: 620px) {
+  .lock-header {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  .lock-content {
+    padding: 0 16px;
+  }
+  .lock-content h1 {
+    font-size: 18px;
+  }
+  .lock-timer {
+    font-size: 54px;
+    margin: 0;
+  }
+  .lock-hint {
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+  .lock-unlock {
+    padding: 10px 14px;
+  }
+  .lock-unlock blockquote {
+    font-size: 12px;
+    margin: 5px 0 7px;
+  }
+  .lock-unlock input {
+    height: 30px;
+    font-size: 12px;
+  }
+  .lock-actions {
+    margin-top: 6px;
+  }
+  .lock-actions button {
+    padding: 5px 14px;
+  }
+  .lock-emergency-toggle {
+    margin-top: 4px;
+  }
+  .lock-emergency {
+    padding: 5px 10px;
+  }
+  .lock-footer {
+    padding: 6px 20px;
+    font-size: 10px;
+  }
+}
