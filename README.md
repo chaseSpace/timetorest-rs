@@ -1,6 +1,6 @@
 # 一叶 · LeafShield
 
-简体中文 | [English](README.en.md) · **作者：磊哥哥**
+简体中文 | [English](README.en.md) · **作者：Leigg**
 
 基于 Rust 和 Tauri 2 的桌面休息提醒与屏幕调节工具。通过定时休息、全屏壁纸和需要手动输入的正念文案，减少连续盯屏的时间。
 
@@ -117,4 +117,3 @@ sudo apt-get install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo
 这是自愿使用的休息工具，不能阻止 Ctrl+Alt+Del、安全桌面、操作系统级注销或强制结束进程；软件调色也不保证覆盖安全桌面和独占全屏。整体内存需要计入系统 WebView 子进程，不能只看 Rust 宿主占用。
 
 - [默认背景图片来源与许可](public/wallpapers/SOURCES.md)，摄影作品许可独立于应用代码。
-- `zzz/` 为本地工作记录，`artifacts/` 为构建和验证产物，均不随源码提交。
