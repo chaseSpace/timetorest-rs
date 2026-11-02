@@ -1,0 +1,36 @@
+name: diagnose-build
+
+on:
+  push:
+    tags: ["build-debug-*"]
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: Failed workflow job ID
+        required: true
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v9
+        env:
+          REQUESTED_JOB: ${{ inputs.job_id }}
+        with:
+          script: |
+            const value = process.env.REQUESTED_JOB || process.env.GITHUB_REF_NAME.replace(/^build-debug-/, '');
+            if (!/^\d+$/.test(value)) throw new Error('Invalid job ID');
+            const response = await github.request('GET /repos/{owner}/{repo}/actions/jobs/{job_id}/logs', {
+              ...context.repo,
+              job_id: Number(value),
+            });
+            const text = typeof response.data === 'string' ? response.data : Buffer.from(response.data).toString('utf8');
+            const lines = text.split(/\r?\n/);
+            const end = lines.findLastIndex(line => line.includes('Process completed with exit code'));
+            if (end < 0) throw new Error('Failure marker missing from job log');
+            const excerpt = lines.slice(Math.max(0, end - 65), end + 1).join('\n').slice(-12000);
+            core.notice(excerpt, { title: `Failure details for job ${value}` });
