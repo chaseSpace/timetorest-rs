@@ -231,18 +231,15 @@ pub fn capture(_window: &tauri::WebviewWindow) {
             _window.display_handle(),
             _window.window_handle(),
             x11_dl::xlib::Xlib::open(),
-        ) {
-            if let (RawDisplayHandle::Xlib(display), RawWindowHandle::Xlib(window)) =
-                (display.as_raw(), window.as_raw())
-            {
-                if let Some(display) = display.display {
-                    unsafe {
-                        let d = display.as_ptr().cast();
-                        if (xlib.XGrabKeyboard)(d, window.window, 1, 1, 1, 0) == 0 {
-                            X_DISPLAY.store(d as usize, Ordering::Relaxed);
-                            READY.store(true, Ordering::Relaxed);
-                        }
-                    }
+        ) && let (RawDisplayHandle::Xlib(display), RawWindowHandle::Xlib(window)) =
+            (display.as_raw(), window.as_raw())
+            && let Some(display) = display.display
+        {
+            unsafe {
+                let d = display.as_ptr().cast();
+                if (xlib.XGrabKeyboard)(d, window.window, 1, 1, 1, 0) == 0 {
+                    X_DISPLAY.store(d as usize, Ordering::Relaxed);
+                    READY.store(true, Ordering::Relaxed);
                 }
             }
         }
@@ -253,11 +250,11 @@ fn release_native() {
     #[cfg(target_os = "linux")]
     {
         let display = X_DISPLAY.swap(0, Ordering::Relaxed);
-        if display != 0 {
-            if let Ok(xlib) = x11_dl::xlib::Xlib::open() {
-                unsafe {
-                    (xlib.XUngrabKeyboard)(display as *mut _, 0);
-                }
+        if display != 0
+            && let Ok(xlib) = x11_dl::xlib::Xlib::open()
+        {
+            unsafe {
+                (xlib.XUngrabKeyboard)(display as *mut _, 0);
             }
         }
     }

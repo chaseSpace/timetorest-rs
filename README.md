@@ -1,6 +1,6 @@
 # 一叶 · LeafShield
 
-[简体中文](README.md) | [English](README.en.md) · **作者：磊哥哥**
+简体中文 | [English](README.en.md) · **作者：磊哥哥**
 
 基于 Rust 和 Tauri 2 的桌面休息提醒与屏幕调节工具。通过定时休息、全屏壁纸和需要手动输入的正念文案，减少连续盯屏的时间。
 

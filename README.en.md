@@ -1,6 +1,6 @@
 # LeafShield · 一叶
 
-[简体中文](README.md) | [English](README.en.md) · **Author: 磊哥哥**
+[简体中文](README.md) | English **Author: Leigg**
 
 A desktop break reminder and screen adjustment utility built with Rust and Tauri 2. Scheduled breaks, full-screen photographs, and manually typed mindfulness phrases help you step away from continuous screen work.
 
