@@ -19,6 +19,7 @@ export function prepareRelease(root, tag) {
       throw new Error(`Invalid Windows executable: ${name}`);
     return { name, data };
   });
+  assets.push({ name: "LICENSE", data: readFileSync(join(root, "LICENSE")) });
   const checksums =
     assets
       .map(

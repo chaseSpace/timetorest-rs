@@ -4,7 +4,7 @@
 
 A desktop break reminder and screen adjustment utility built with Rust and Tauri 2. Scheduled breaks, full-screen photographs, and manually typed mindfulness phrases help you step away from continuous screen work.
 
-Current version: **0.6.0**, with Windows x64 portable and installer packages. Both the application and documentation support Chinese and English. Open 选项 (Options) → 语言 (Language), then choose `English` or `简体中文`. Changes apply immediately and persist.
+Current version: **0.6.1**, with Windows x64 portable and installer packages. Both the application and documentation support Chinese and English. Open 选项 (Options) → 语言 (Language), then choose `English` or `简体中文`. Changes apply immediately and persist.
 
 ## Download and run
 
@@ -12,9 +12,10 @@ Download from [Releases](https://github.com/chaseSpace/timetorest-rs/releases/la
 
 | File                             | Purpose                                                               |
 | -------------------------------- | --------------------------------------------------------------------- |
-| `leafshield-0.6.0.exe`           | Portable executable; keep it in a stable location and run it directly |
-| `LeafShield_0.6.0_x64-setup.exe` | Windows installer for the current user                                |
-| `SHA256SUMS.txt`                 | SHA256 checksums for those two files                                  |
+| `leafshield-0.6.1.exe`           | Portable executable; keep it in a stable location and run it directly |
+| `LeafShield_0.6.1_x64-setup.exe` | Windows installer for the current user                                |
+| `SHA256SUMS.txt`                 | SHA256 checksums for executables and license                          |
+| `LICENSE`                        | MIT license                                                           |
 
 Microsoft Edge WebView2 Runtime is required. Production UI assets are embedded in the executable: running the app does not start an HTTP server or require Node.js or Vite. Release executables are not code-signed.
 
@@ -73,7 +74,7 @@ Install Node.js **22.12+**, Rust stable, and your platform's native Tauri depend
 git clone git@github.com:chaseSpace/timetorest-rs.git
 cd timetorest-rs
 npm ci
-npm run build             # Portable executable → artifacts/leafshield-0.6.0.exe
+npm run build             # Portable executable → artifacts/leafshield-0.6.1.exe
 npm run build:installer   # Windows NSIS installer
 ```
 
@@ -110,7 +111,7 @@ sudo apt-get install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo
 
 ## Publishing
 
-Update `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `Cargo.lock`, `src-tauri/tauri.conf.json`, and the displayed version. Add matching notes under `docs/releases/`, then push a `v<version>` tag. The [release workflow](.github/workflows/release.yml) validates the version, builds Windows portable and NSIS packages, generates checksums for those two assets, and publishes after all uploads finish. Failed uploads remain a draft.
+Update `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `Cargo.lock`, `src-tauri/tauri.conf.json`, and the displayed version. Add matching notes under `docs/releases/`, then push a `v<version>` tag. The [release workflow](.github/workflows/release.yml) validates the version, builds Windows portable and NSIS packages, generates checksums for the executables and license, and publishes after all uploads finish. Failed uploads remain a draft.
 
 ## Scope and references
 
@@ -118,3 +119,11 @@ This is a voluntary break tool. It cannot block Ctrl+Alt+Del, secure desktops, O
 
 - [Bundled photograph sources and licensing](public/wallpapers/SOURCES.md). Their licenses are separate from application code.
 - `zzz/` holds local work notes, while `artifacts/` holds build and verification output. Neither directory is included in source control.
+
+## License
+
+The project code is available under the [MIT License](LICENSE). You may use, modify, and distribute it under those terms. Bundled photographs retain their own licenses; see [image sources](public/wallpapers/SOURCES.md).
+
+## Acknowledgments
+
+Thanks to **CareUEyes**. Its interface design and some features inspired this project.

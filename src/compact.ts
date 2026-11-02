@@ -433,7 +433,7 @@ export class CompactUI {
     } else if (this.page === "about") {
       const state = this.read();
       panel.innerHTML = html(
-        `<h2>一叶 · LeafShield <small>0.6.0</small></h2><p class="about-motto">定时休息，给眼睛一点留白。<span class="about-author">作者：磊哥哥</span></p><dl class="compact-stats"><div><dt>今日专注</dt><dd><span data-stat="focus">0</span> 分钟</dd></div><div><dt>完成休息</dt><dd><span data-stat="rest">0</span> 次</dd></div><div><dt>休息时长</dt><dd><span data-stat="minutes">0</span> 分钟</dd></div></dl><p class="utility-help">${state.platform === "macos" && !state.keyboardProtection ? "快捷键防护需要在系统辅助功能中授权后重启。" : state.keyboardProtection ? "快捷键防护已就绪，休息期间启用。" : !this.native ? "浏览器仅预览界面，不拦截桌面快捷键。" : "快捷键防护状态由桌面权限决定。"}</p><div class="data-path"><span>本机记录</span><code>${esc(state.dataPath)}</code></div><button id="open-history" class="classic-button">休息记录</button>`,
+        `<h2>一叶 · LeafShield <small>0.6.1</small></h2><p class="about-motto">定时休息，给眼睛一点留白。<span class="about-author">作者：磊哥哥</span></p><p class="utility-help">UI 与部分功能参考 CareUEyes。</p><dl class="compact-stats"><div><dt>今日专注</dt><dd><span data-stat="focus">0</span> 分钟</dd></div><div><dt>完成休息</dt><dd><span data-stat="rest">0</span> 次</dd></div><div><dt>休息时长</dt><dd><span data-stat="minutes">0</span> 分钟</dd></div></dl><p class="utility-help">${state.platform === "macos" && !state.keyboardProtection ? "快捷键防护需要在系统辅助功能中授权后重启。" : state.keyboardProtection ? "快捷键防护已就绪，休息期间启用。" : !this.native ? "浏览器仅预览界面，不拦截桌面快捷键。" : "快捷键防护状态由桌面权限决定。"}</p><div class="data-path"><span>本机记录</span><code>${esc(state.dataPath)}</code></div><button id="open-history" class="classic-button">休息记录</button>`,
       );
       this.button("open-history", () => this.navigate("history"));
     } else {

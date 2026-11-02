@@ -1,8 +1,9 @@
 [package]
 name = "leafshield"
-version = "0.6.0"
+version = "0.6.1"
 description = "A little space for your eyes"
 edition = "2024"
+license = "MIT"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

@@ -4,7 +4,7 @@
 
 基于 Rust 和 Tauri 2 的桌面休息提醒与屏幕调节工具。通过定时休息、全屏壁纸和需要手动输入的正念文案，减少连续盯屏的时间。
 
-当前版本 **0.6.0**，提供 Windows x64 便携版和安装包。软件与文档均支持中英文；在“选项 → 语言”选择 `English` 或 `简体中文`，切换后立即生效并保存。
+当前版本 **0.6.1**，提供 Windows x64 便携版和安装包。软件与文档均支持中英文；在“选项 → 语言”选择 `English` 或 `简体中文`，切换后立即生效并保存。
 
 ## 下载与运行
 
@@ -12,9 +12,10 @@
 
 | 文件                             | 用途                           |
 | -------------------------------- | ------------------------------ |
-| `leafshield-0.6.0.exe`           | 便携版，放在固定目录后直接运行 |
-| `LeafShield_0.6.0_x64-setup.exe` | Windows 当前用户安装包         |
-| `SHA256SUMS.txt`                 | 上述两个文件的 SHA256 校验值   |
+| `leafshield-0.6.1.exe`           | 便携版，放在固定目录后直接运行 |
+| `LeafShield_0.6.1_x64-setup.exe` | Windows 当前用户安装包         |
+| `SHA256SUMS.txt`                 | 程序和许可文件的 SHA256 校验值 |
+| `LICENSE`                        | MIT 许可文件                   |
 
 需要 Microsoft Edge WebView2 Runtime。正式程序的界面资源嵌入 EXE，运行时不启动 HTTP 服务，不需要 Node.js 或 Vite。发行文件未做代码签名。
 
@@ -73,7 +74,7 @@
 git clone git@github.com:chaseSpace/timetorest-rs.git
 cd timetorest-rs
 npm ci
-npm run build             # 便携版 → artifacts/leafshield-0.6.0.exe
+npm run build             # 便携版 → artifacts/leafshield-0.6.1.exe
 npm run build:installer   # Windows NSIS 安装包
 ```
 
@@ -110,10 +111,18 @@ sudo apt-get install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo
 
 ## 发布
 
-更新 `package.json`、`package-lock.json`、`src-tauri/Cargo.toml`、`Cargo.lock`、`src-tauri/tauri.conf.json` 和界面版本号，在 `docs/releases/` 添加版本说明后推送 `v<版本号>` 标签。[发布工作流](.github/workflows/release.yml) 校验版本，构建 Windows 便携版和 NSIS 安装包，为两个资产生成独立校验文件，全部上传完成后公开 Release。失败的上传保留为草稿。
+更新 `package.json`、`package-lock.json`、`src-tauri/Cargo.toml`、`Cargo.lock`、`src-tauri/tauri.conf.json` 和界面版本号，在 `docs/releases/` 添加版本说明后推送 `v<版本号>` 标签。[发布工作流](.github/workflows/release.yml) 校验版本，构建 Windows 便携版和 NSIS 安装包，为程序和许可文件生成校验值，全部上传完成后公开 Release。失败的上传保留为草稿。
 
 ## 使用边界与资料
 
 这是自愿使用的休息工具，不能阻止 Ctrl+Alt+Del、安全桌面、操作系统级注销或强制结束进程；软件调色也不保证覆盖安全桌面和独占全屏。整体内存需要计入系统 WebView 子进程，不能只看 Rust 宿主占用。
 
 - [默认背景图片来源与许可](public/wallpapers/SOURCES.md)，摄影作品许可独立于应用代码。
+
+## 许可
+
+项目代码采用 [MIT License](LICENSE)，可按许可条款使用、修改和分发。默认背景照片仍遵循各自许可，详见[图片来源](public/wallpapers/SOURCES.md)。
+
+## 鸣谢
+
+感谢 **CareUEyes**。本项目的界面设计和部分功能参考了该软件。
