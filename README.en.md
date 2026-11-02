@@ -48,6 +48,10 @@ Custom backgrounds accept JPEG / PNG / WebP up to 5 MB, 16 megapixels, and 8192 
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | ![Temperature and brightness](.github/images/屏幕截图%202025-12-20%20170703.png) | ![Work and break timer](.github/images/Snipaste_2026-11-02_13-30-19.png) |
 
+| Unlock phrases                                                            | About                                                                |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| ![Unlock phrase presets](.github/images/Snipaste_2026-11-02_13-30-28.png) | ![About LeafShield](.github/images/Snipaste_2026-11-02_13-30-38.png) |
+
 ## Technology stack
 
 | Layer                     | Technology and responsibility                                                                                        |
@@ -149,5 +153,5 @@ Update `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `Cargo.lock`
 
 This is a voluntary break tool. It cannot block Ctrl+Alt+Del, secure desktops, OS logout, or forced process termination. Software adjustment does not guarantee coverage of secure desktops or exclusive full-screen applications. Resource usage includes system WebView child processes; Rust host memory alone does not describe the whole application.
 
-- [Original requirements](zzz/requirement.md) and [implementation / acceptance log](zzz/IMPLEMENTATION.md), currently in Chinese. Referenced `artifacts/` files are generated locally and are not in source control.
 - [Bundled photograph sources and licensing](public/wallpapers/SOURCES.md). Their licenses are separate from application code.
+- `zzz/` holds local work notes, while `artifacts/` holds build and verification output. Neither directory is included in source control.

@@ -6,6 +6,7 @@ test-results/
 playwright-report/
 .idea/
 .playwright-mcp/
+zzz/
 .env
 .env.*
 !.env.example
