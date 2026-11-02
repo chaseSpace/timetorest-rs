@@ -15,6 +15,8 @@ export class LockScreen {
   private emergencyOpen = false;
   private imageKey = "";
   private disposed = false;
+  private windowLabel = native ? getCurrentWindow().label : null;
+  private focusInput = () => {};
   constructor(
     private root: HTMLElement,
     initial: Snapshot,
@@ -43,22 +45,22 @@ export class LockScreen {
       )
         input.focus({ preventScroll: true });
     };
+    this.focusInput = focusInput;
     let focusing = false;
-    const revealUnlock = (activateWindow = false) => {
+    const revealUnlock = () => {
       if (this.disposed) return;
-      unlockPanel.classList.remove("is-idle");
-      focusInput();
-      if (activateWindow && native && !focusing) {
-        focusing = true;
-        void call<void>("focus_rest_input")
-          .then(focusInput)
-          .catch((error) => {
-            if (!this.disposed) this.toast(String(error), true);
-          })
-          .finally(() => {
-            focusing = false;
-          });
+      if (!native) {
+        unlockPanel.classList.remove("is-idle");
+        focusInput();
+        return;
       }
+      if (!unlockPanel.classList.contains("is-idle") || focusing) return;
+      focusing = true;
+      // Native state owns visibility across screens. DOM blur/focus events
+      // can occur transiently while activating a WebView or using an IME.
+      void this.act("focus_rest_input").finally(() => {
+        focusing = false;
+      });
     };
     // WebView2 can emit a mousemove when a full-screen window is positioned.
     // Compare physical desktop coordinates instead of its movementX/Y values.
@@ -75,7 +77,7 @@ export class LockScreen {
           !event.isTrusted ||
           this.disposed ||
           samplingPointer ||
-          (!unlockPanel.classList.contains("is-idle") && document.hasFocus())
+          !unlockPanel.classList.contains("is-idle")
         )
           return;
         if (nativeWindow) {
@@ -95,7 +97,7 @@ export class LockScreen {
                 current.y >= origin.y &&
                 current.y < origin.y + size.height
               )
-                revealUnlock(true);
+                revealUnlock();
               return;
             }
           } catch {
@@ -108,7 +110,7 @@ export class LockScreen {
           previous &&
           (previous.x !== event.screenX || previous.y !== event.screenY)
         )
-          revealUnlock(true);
+          revealUnlock();
       },
       options,
     );
@@ -121,11 +123,6 @@ export class LockScreen {
       { ...options, capture: true },
     );
     window.addEventListener("focus", focusInput, options);
-    window.addEventListener(
-      "blur",
-      () => unlockPanel.classList.add("is-idle"),
-      options,
-    );
     for (const event of [
       "copy",
       "cut",
@@ -256,6 +253,13 @@ export class LockScreen {
     if (document.hasFocus()) focusInput();
   }
   update(snapshot: Snapshot) {
+    if (native) {
+      const panel = this.root.querySelector<HTMLElement>(".lock-unlock")!;
+      const visible = snapshot.restInputWindow === this.windowLabel;
+      const wasHidden = panel.classList.contains("is-idle");
+      panel.classList.toggle("is-idle", !visible);
+      if (visible && wasHidden) this.focusInput();
+    }
     this.root.querySelector("[data-rest-timer]")!.textContent = tr(
       time(
         this.preview

@@ -29,6 +29,7 @@ struct AppState {
     smoke_ready: std::sync::atomic::AtomicBool,
     smoke_title: Mutex<Option<String>>,
     dock: Mutex<widget_dock::Controller>,
+    rest_input_window: Mutex<Option<String>>,
 }
 fn localize(app: &tauri::AppHandle, text: &str) -> String {
     let language = app
@@ -71,6 +72,7 @@ struct ViewState {
     data_path: String,
     smoke_mode: bool,
     display_status: display::Status,
+    rest_input_window: Option<String>,
 }
 fn view(app: &tauri::AppHandle) -> ViewState {
     let state = app.state::<AppState>();
@@ -83,6 +85,7 @@ fn view(app: &tauri::AppHandle) -> ViewState {
         data_path: state.file.display().to_string(),
         smoke_mode: state.smoke,
         display_status: display::status(),
+        rest_input_window: state.rest_input_window.lock().unwrap().clone(),
     }
 }
 fn save(path: &Path, data: &Persisted) -> Result<(), String> {
@@ -332,19 +335,37 @@ async fn emergency_key(
 async fn focus_rest_input(
     app: tauri::AppHandle,
     window: tauri::WebviewWindow,
-) -> Result<(), String> {
-    if window.label() != "preview" {
+) -> Result<ViewState, String> {
+    let state = app.state::<AppState>();
+    let phase = state.runtime.lock().unwrap().engine.phase;
+    if window.label() == "preview" {
+        if phase == Phase::Resting {
+            return Err("请在休息窗口执行此操作".into());
+        }
+    } else {
         rest_only(&window)?;
-        if app.state::<AppState>().runtime.lock().unwrap().engine.phase != Phase::Resting {
+        if phase != Phase::Resting {
             return Err("当前不在休息中".into());
         }
     }
+    let already_active = state.rest_input_window.lock().unwrap().as_deref() == Some(window.label());
+    if already_active {
+        return Ok(view(&app));
+    }
     window.set_focus().map_err(|e| e.to_string())?;
-    window.as_ref().set_focus().map_err(|e| e.to_string())
+    window.as_ref().set_focus().map_err(|e| e.to_string())?;
+    *state.rest_input_window.lock().unwrap() = Some(window.label().to_owned());
+    changed(&app);
+    Ok(view(&app))
 }
 #[tauri::command]
 async fn preview_rest(app: tauri::AppHandle, window: tauri::WebviewWindow) -> Result<(), String> {
     main_only(&window)?;
+    if app.state::<AppState>().runtime.lock().unwrap().engine.phase == Phase::Resting {
+        return Err("已经在休息中".into());
+    }
+    *app.state::<AppState>().rest_input_window.lock().unwrap() = None;
+    changed(&app);
     if let Some(window) = app.get_webview_window("preview") {
         window.show().map_err(|e| e.to_string())?;
         return window.set_focus().map_err(|e| e.to_string());
@@ -372,6 +393,10 @@ fn window_action(
         "minimize" if window.label() == "main" => window.minimize().map_err(|e| e.to_string()),
         "hide" if window.label() == "main" => window.hide().map_err(|e| e.to_string()),
         "close" if ["preview", "warning"].contains(&window.label()) => {
+            if window.label() == "preview" {
+                *app.state::<AppState>().rest_input_window.lock().unwrap() = None;
+                changed(&app);
+            }
             window.close().map_err(|e| e.to_string())
         }
         "show" if view(&app).timer.phase != Phase::Resting => {
@@ -490,6 +515,7 @@ fn rest_windows(app: &tauri::AppHandle, hidden: bool) -> Result<usize, String> {
     Ok(monitors.len())
 }
 fn close_rest(app: &tauri::AppHandle) {
+    *app.state::<AppState>().rest_input_window.lock().unwrap() = None;
     platform::release();
     for (label, window) in app.webview_windows() {
         if label.starts_with("rest-") {
@@ -506,6 +532,7 @@ fn apply_effect(app: &tauri::AppHandle, effect: Effect) {
     let handle = app.clone();
     let _ = handle.run_on_main_thread(move || match effect {
         Effect::Lock => {
+            *app.state::<AppState>().rest_input_window.lock().unwrap() = None;
             if let Some(window) = app.get_webview_window("warning") {
                 let _ = window.close();
             }
@@ -782,7 +809,7 @@ fn main() {
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => (Persisted::default(), None),
             Err(e) => (Persisted::default(), Some(format!("配置文件不可读：{e}")))
         };
-        app.manage(AppState { runtime: Mutex::new(Runtime { engine: Engine::new(data), last_tick: Instant::now(), notice }), file, smoke: is_smoke, smoke_ready: std::sync::atomic::AtomicBool::new(false), smoke_title:Mutex::new(None), dock:Mutex::new(widget_dock::Controller::default()) });
+        app.manage(AppState { runtime: Mutex::new(Runtime { engine: Engine::new(data), last_tick: Instant::now(), notice }), file, smoke: is_smoke, smoke_ready: std::sync::atomic::AtomicBool::new(false), smoke_title:Mutex::new(None), dock:Mutex::new(widget_dock::Controller::default()), rest_input_window:Mutex::new(None) });
         if let Some(report) = &smoke_report {
             // Let WebView2 finish loading the compact main page before hiding it.
             if let Some(main) = app.get_webview_window("main") { main.show()?; }

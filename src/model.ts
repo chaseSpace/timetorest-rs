@@ -50,6 +50,7 @@ export interface Snapshot {
   notice: string | null;
   dataPath: string;
   smokeMode?: boolean;
+  restInputWindow?: string | null;
   displayStatus?: {
     supported: boolean;
     active: boolean;
