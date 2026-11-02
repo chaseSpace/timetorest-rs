@@ -7,7 +7,8 @@ const root = process.cwd();
 const version = /^version = "([^"]+)"/m.exec(
   readFileSync("crates/leafshield-native/Cargo.toml", "utf8"),
 )?.[1];
-const tag = `win-v${version}`;
+const prerelease = version.includes("-");
+const tag = prerelease ? `win-v${version}` : `v${version}`;
 
 test("prepares the three complete native release assets", () => {
   const release = prepareNativeRelease(root, tag);
@@ -17,10 +18,11 @@ test("prepares the three complete native release assets", () => {
     [`leafshield-native-${version}.exe`, "LICENSE", "SHA256SUMS.txt"],
   );
   assert(release.assets.every((asset) => asset.data.length > 0));
-  assert.throws(() => prepareNativeRelease(root, `v${version}`), /mismatch/);
+  const wrongTag = prerelease ? `v${version}` : `win-v${version}`;
+  assert.throws(() => prepareNativeRelease(root, wrongTag), /mismatch/);
 });
 
-test("publishes an immutable prerelease after every asset uploads", async () => {
+test("publishes an immutable release after every asset uploads", async () => {
   const calls = [];
   const github = {
     rest: {
@@ -66,7 +68,7 @@ test("publishes an immutable prerelease after every asset uploads", async () => 
   }
   assert.equal(calls[0][0], "create");
   assert.equal(calls[0][1].draft, true);
-  assert.equal(calls[0][1].prerelease, true);
+  assert.equal(calls[0][1].prerelease, prerelease);
   assert.deepEqual(calls.slice(1, 4).map((call) => call[1]), [
     `leafshield-native-${version}.exe`,
     "LICENSE",
@@ -74,6 +76,6 @@ test("publishes an immutable prerelease after every asset uploads", async () => 
   ]);
   assert.equal(calls[4][0], "publish");
   assert.equal(calls[4][1].draft, false);
-  assert.equal(calls[4][1].prerelease, true);
-  assert.equal(calls[4][1].make_latest, "false");
+  assert.equal(calls[4][1].prerelease, prerelease);
+  assert.equal(calls[4][1].make_latest, prerelease ? "false" : "true");
 });

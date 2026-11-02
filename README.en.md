@@ -4,7 +4,7 @@
 
 A **Rust + Win32** break reminder for Windows, with screen temperature and brightness controls, a floating countdown, and full-screen breaks that require a manually typed phrase to end early.
 
-Current native preview: **0.7.0-dev.4**. The source is merged into **`main`**, with `dev.win` retained as the Windows development branch. Targets **Windows 11 x64**; Windows 10 compatibility has not been fully verified. **macOS and Linux are not currently supported.**
+Current stable release: **0.7.0**. The source is on **`main`**, with `dev.win` retained as the Windows development branch. Targets **Windows 11 x64**; Windows 10 compatibility has not been fully verified. **macOS and Linux are not currently supported.**
 
 The application uses native controls and GDI drawing. Running it requires no WebView2, browser, or Node.js, and starts no HTTP server.
 
@@ -47,15 +47,15 @@ Custom images may be up to 5 MB, 16 megapixels, and 8192 pixels on either edge. 
 
 ## Download and run
 
-Download the [Windows native preview 0.7.0-dev.4](https://github.com/chaseSpace/timetorest-rs/releases/tag/win-v0.7.0-dev.4):
+Download the [Windows stable release 0.7.0](https://github.com/chaseSpace/timetorest-rs/releases/tag/v0.7.0):
 
 | File | Purpose |
 | --- | --- |
-| `leafshield-native-0.7.0-dev.4.exe` | Windows x64 portable preview |
+| `leafshield-native-0.7.0.exe` | Windows x64 portable executable |
 | `SHA256SUMS.txt` | SHA-256 checksums for the EXE and license |
 | `LICENSE` | MIT license |
 
-Run the EXE directly; installation is not required. This preview is unsigned, so Windows may display a security prompt. Verify it with the checksum file from the same release. **The 0.6.x packages on GitHub Releases are historical Tauri builds.**
+Run the EXE directly; installation is not required. This release is unsigned, so Windows may display a security prompt. Verify it with the checksum file from the same release. **The 0.6.x packages on GitHub Releases are historical Tauri builds.**
 
 1. Exit the older version from its tray menu before running the new EXE.
 2. Choose durations in Timer. Use Preview to view the break screen.
@@ -78,7 +78,7 @@ Locally generated files:
 
 | File | Purpose |
 | --- | --- |
-| `artifacts/native-dev/leafshield-native-0.7.0-dev.4.exe` | Windows x64 portable preview |
+| `artifacts/native-dev/leafshield-native-0.7.0.exe` | Windows x64 portable executable |
 | `artifacts/native-dev/SHA256SUMS.txt` | SHA-256 checksums for the EXE and license |
 | `artifacts/native-dev/LICENSE` | MIT license |
 

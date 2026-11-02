@@ -1,6 +1,6 @@
 # Windows 原生开发版
 
-当前版本：`0.7.0-dev.4`。源码已从 `dev.win` 合并到 `main`，当前仅支持 Windows 原生界面，暂不支持 macOS。
+当前正式版本：`0.7.0`。源码位于 `main`，当前仅支持 Windows 原生界面，暂不支持 macOS。
 
 ## 构建与运行
 
@@ -8,7 +8,7 @@
 npm run build:native
 ```
 
-运行 `artifacts/native-dev/leafshield-native-0.7.0-dev.4.exe`，无需 Node.js、WebView2 或安装步骤。
+运行 `artifacts/native-dev/leafshield-native-0.7.0.exe`，无需 Node.js、WebView2 或安装步骤。
 构建目录同时包含 MIT LICENSE 和 SHA256SUMS.txt。该命令只生成测试程序，不启动 HTTP 服务、不安装、不发布 Release。
 
 测试前从托盘退出旧版，再启动原生版，避免同时计时及调节屏幕颜色。

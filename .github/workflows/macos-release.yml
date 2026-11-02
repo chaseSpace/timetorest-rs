@@ -2,7 +2,7 @@ name: macos-release
 
 on:
   push:
-    tags: ["v*", "mac-v*"]
+    tags: ["mac-v*"]
   workflow_dispatch:
     inputs:
       tag:

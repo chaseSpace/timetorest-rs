@@ -4,7 +4,7 @@
 
 一个用 **Rust + Win32** 编写的 Windows 护眼休息工具。支持定时休息、色温与亮度调节、悬浮倒计时，以及需要手动输入文案才能提前结束的休息锁屏。
 
-当前原生测试版本：**0.7.0-dev.4**，源码已合并到 **`main`**，Windows 开发分支保留为 `dev.win`。面向 **Windows 11 x64**，Windows 10 兼容性尚未完整验证；**暂不支持 macOS 和 Linux**。
+当前正式版本：**0.7.0**，源码位于 **`main`**，Windows 开发分支保留为 `dev.win`。面向 **Windows 11 x64**，Windows 10 兼容性尚未完整验证；**暂不支持 macOS 和 Linux**。
 
 程序使用原生控件与 GDI 绘图，运行时无需 WebView2、浏览器或 Node.js，也不启动 HTTP 服务。
 
@@ -47,15 +47,15 @@
 
 ## 下载与运行
 
-从 [Windows 原生预览版 0.7.0-dev.4](https://github.com/chaseSpace/timetorest-rs/releases/tag/win-v0.7.0-dev.4) 下载：
+从 [Windows 正式版 0.7.0](https://github.com/chaseSpace/timetorest-rs/releases/tag/v0.7.0) 下载：
 
 | 文件 | 用途 |
 | --- | --- |
-| `leafshield-native-0.7.0-dev.4.exe` | Windows x64 便携测试程序 |
+| `leafshield-native-0.7.0.exe` | Windows x64 便携程序 |
 | `SHA256SUMS.txt` | EXE 和许可文件的 SHA-256 校验值 |
 | `LICENSE` | MIT 许可 |
 
-下载 EXE 后直接运行，无需安装。该预览版没有代码签名，Windows 可能显示安全提示，请使用同一发行中的校验文件核对下载内容。GitHub Releases 中的 **0.6.x 属于历史 Tauri 版本**。
+下载 EXE 后直接运行，无需安装。该版本没有代码签名，Windows 可能显示安全提示，请使用同一发行中的校验文件核对下载内容。GitHub Releases 中的 **0.6.x 属于历史 Tauri 版本**。
 
 1. 从托盘退出旧版，再运行新的 EXE。
 2. 在“定时器”选择时间组合；“预览锁屏”可查看休息界面。
@@ -78,7 +78,7 @@ npm run build:native
 
 | 文件 | 用途 |
 | --- | --- |
-| `artifacts/native-dev/leafshield-native-0.7.0-dev.4.exe` | Windows x64 便携测试程序 |
+| `artifacts/native-dev/leafshield-native-0.7.0.exe` | Windows x64 便携程序 |
 | `artifacts/native-dev/SHA256SUMS.txt` | EXE 和许可文件的 SHA-256 校验值 |
 | `artifacts/native-dev/LICENSE` | MIT 许可 |
 

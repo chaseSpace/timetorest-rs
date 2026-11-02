@@ -503,7 +503,7 @@ impl App {
         draw_text(
             dc,
             self.font,
-            "0.7.0 dev",
+            env!("CARGO_PKG_VERSION"),
             rectangle(
                 px(18, self.dpi),
                 px(416, self.dpi),

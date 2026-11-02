@@ -1956,7 +1956,7 @@ dependencies = [
 
 [[package]]
 name = "leafshield-native"
-version = "0.7.0-dev.4"
+version = "0.7.0"
 dependencies = [
  "chrono",
  "embed-resource",

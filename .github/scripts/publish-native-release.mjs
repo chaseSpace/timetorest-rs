@@ -10,10 +10,12 @@ export function prepareNativeRelease(root, tag) {
     "utf8",
   );
   const version = /^version = "([^"]+)"/m.exec(manifest)?.[1];
-  if (!version || tag !== `win-v${version}`)
+  const prerelease = version?.includes("-") ?? false;
+  const expectedTag = prerelease ? `win-v${version}` : `v${version}`;
+  if (!version || tag !== expectedTag)
     throw new Error("Tag/version mismatch");
-  if (!/^\d+\.\d+\.\d+-dev\.\d+$/.test(version))
-    throw new Error("Native preview version must use x.y.z-dev.n");
+  if (!/^\d+\.\d+\.\d+(?:-dev\.\d+)?$/.test(version))
+    throw new Error("Native version must use x.y.z or x.y.z-dev.n");
 
   const directory = join(root, "artifacts/native-dev");
   const executableName = `leafshield-native-${version}.exe`;
@@ -41,7 +43,7 @@ export function prepareNativeRelease(root, tag) {
   );
   if (!body.includes("Rust + Win32") || !body.includes("macOS"))
     throw new Error("Native release notes must describe the stack and platform scope");
-  return { version, tag, body, assets };
+  return { version, tag, body, assets, prerelease };
 }
 
 export default async function publish({ github, context, core }) {
@@ -69,7 +71,7 @@ export default async function publish({ github, context, core }) {
         name: `LeafShield Windows ${release.version}`,
         body: release.body,
         draft: true,
-        prerelease: true,
+        prerelease: release.prerelease,
       })
     ).data;
   }
@@ -101,8 +103,8 @@ export default async function publish({ github, context, core }) {
       release_id: draft.id,
       body: release.body,
       draft: false,
-      prerelease: true,
-      make_latest: "false",
+      prerelease: release.prerelease,
+      make_latest: release.prerelease ? "false" : "true",
     })
   ).data;
   core.info(`Published ${published.html_url}`);
