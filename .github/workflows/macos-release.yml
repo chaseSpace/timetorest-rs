@@ -38,8 +38,9 @@ jobs:
           import path from 'node:path';
           import { execFileSync } from 'node:child_process';
           const ref = process.env.REQUESTED_TAG || process.env.GITHUB_REF_NAME;
-          const tag = ref.startsWith('mac-') ? ref.slice(4) : ref;
-          if (!/^v\d+\.\d+\.\d+$/.test(tag)) throw new Error('Invalid application tag');
+          const match = /^(?:mac-)?(v\d+\.\d+\.\d+)(?:-retry\d+)?$/.exec(ref);
+          if (!match) throw new Error('Invalid application tag');
+          const tag = match[1];
           const helper = path.join(process.env.RUNNER_TEMP, 'add-macos-release.mjs');
           fs.copyFileSync('.github/scripts/add-macos-release.mjs', helper);
           execFileSync('git', ['checkout', tag], { stdio: 'inherit' });
@@ -55,11 +56,12 @@ jobs:
         with:
           workspaces: ". -> target"
           shared-key: macos-universal
+          cache-on-failure: true
       - name: Use crates.io on the hosted runner
         run: node -e "require('fs').rmSync('.cargo/config.toml')"
       - run: npm ci
       - name: Build Universal DMG
-        run: node node_modules/@tauri-apps/cli/tauri.js build --target universal-apple-darwin --bundles dmg --ci --config '{"bundle":{"resources":["../LICENSE"]}}'
+        run: node node_modules/@tauri-apps/cli/tauri.js build --target universal-apple-darwin --bundles app,dmg --ci --config '{"bundle":{"resources":["../LICENSE"]}}'
       - name: Verify both architectures and ad-hoc signature
         run: |
           node --input-type=module <<'NODE'
@@ -67,6 +69,11 @@ jobs:
           import path from 'node:path';
           import assert from 'node:assert/strict';
           import { execFileSync } from 'node:child_process';
+          process.on('uncaughtException', error => {
+            const message = String(error.stack || error).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+            console.error(`::error title=macOS artifact validation::${message}`);
+            process.exitCode = 1;
+          });
           const root = 'target/universal-apple-darwin/release';
           const architectures = execFileSync('lipo', ['-archs', path.join(root, 'leafshield')], { encoding: 'utf8' });
           assert(architectures.includes('arm64') && architectures.includes('x86_64'), 'Missing architecture');
