@@ -4,7 +4,7 @@
 
 A desktop break reminder and screen adjustment utility built with Rust and Tauri 2. Scheduled breaks, full-screen photographs, and manually typed mindfulness phrases help you step away from continuous screen work.
 
-Current version: **0.6.1**, with Windows x64 portable and installer packages. Both the application and documentation support Chinese and English. Open 选项 (Options) → 语言 (Language), then choose `English` or `简体中文`. Changes apply immediately and persist.
+Current version: **0.6.1**, with Windows x64 portable / installer packages and a macOS Universal DMG (Apple Silicon + Intel). Both the application and documentation support Chinese and English. Open 选项 (Options) → 语言 (Language), then choose `English` or `简体中文`. Changes apply immediately and persist.
 
 ## Download and run
 
@@ -17,14 +17,18 @@ Download from [Releases](https://github.com/chaseSpace/timetorest-rs/releases/la
 | `SHA256SUMS.txt`                 | SHA256 checksums for executables and license                          |
 | `LICENSE`                        | MIT license                                                           |
 
-Microsoft Edge WebView2 Runtime is required. Production UI assets are embedded in the executable: running the app does not start an HTTP server or require Node.js or Vite. Release executables are not code-signed.
+macOS download: `LeafShield_0.6.1_universal.dmg`, with `SHA256SUMS-macos.txt` covering the DMG and LICENSE.
+
+Microsoft Edge WebView2 Runtime is required on Windows. Production UI assets are embedded in the package: running the app does not start an HTTP server or require Node.js or Vite. Windows executables are not code-signed. The macOS app is ad-hoc signed without Developer ID signing or notarization.
 
 1. Start the app and choose your durations. The default is **45 minutes of work / 2 minutes of rest**.
 2. At break time, a separate always-on-top full-screen window covers each monitor. The break ends automatically at zero.
 3. To finish early, move the mouse or press a key to reveal the unlock area, then manually type the selected phrase.
 4. Closing the main window minimizes the app to the system tray while timing continues. Reopen or exit it from the tray.
 
-**Start at login is enabled by default, including in portable mode.** Disable it under Options → Start at login. Login startup keeps the main window in the tray. After moving or renaming the executable, run it manually once to update the startup path according to your saved preference. Administrator rights are not required.
+**On Windows, start at login is enabled by default, including in portable mode.** Disable it under Options → Start at login. Login startup keeps the main window in the tray. After moving or renaming the executable, run it manually once to update the startup path according to your saved preference. Administrator rights are not required.
+
+On macOS, open the DMG and drag LeafShield to Applications. Follow the first-launch approval prompts. For keyboard protection, grant Accessibility permission under System Settings → Privacy & Security and restart the app. See [Tauri macOS signing](https://v2.tauri.app/distribute/sign/macos/) for the ad-hoc signing limitations.
 
 ## Features
 
@@ -96,12 +100,12 @@ Only explicit development commands, `npm run desktop` / `npm run dev`, start a l
 
 ### Platform status
 
-| Platform      | Current scope                                                                                                                                                                                 |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows x64   | This release's target; local release compilation and selected native checks completed; latest dual-monitor interactions remain subject to manual acceptance                                   |
-| macOS         | Source adaptation and CI configuration provided; requires Xcode Command Line Tools and Accessibility permission for keyboard protection; no package or real-device acceptance in this release |
-| Linux X11     | Source adaptation and CI configuration provided; GTK / WebKitGTK / AppIndicator / X11 required, with `xprop` for foreground detection; no package or real-device acceptance in this release   |
-| Linux Wayland | Global keyboard handling, foreground detection, and always-on-top behavior depend on the compositor; parity with X11 is not guaranteed                                                        |
+| Platform      | Current scope                                                                                                                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows x64   | This release's target; local release compilation and selected native checks completed; latest dual-monitor interactions remain subject to manual acceptance                                 |
+| macOS         | Universal DMG for Apple Silicon and Intel; CI checks both architectures and signature integrity. Keyboard protection needs Accessibility permission; real-device acceptance remains manual. |
+| Linux X11     | Source adaptation and CI configuration provided; GTK / WebKitGTK / AppIndicator / X11 required, with `xprop` for foreground detection; no package or real-device acceptance in this release |
+| Linux Wayland | Global keyboard handling, foreground detection, and always-on-top behavior depend on the compositor; parity with X11 is not guaranteed                                                      |
 
 Example Ubuntu / Debian dependencies:
 
@@ -112,6 +116,8 @@ sudo apt-get install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo
 ## Publishing
 
 Update `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `Cargo.lock`, `src-tauri/tauri.conf.json`, and the displayed version. Add matching notes under `docs/releases/`, then push a `v<version>` tag. The [release workflow](.github/workflows/release.yml) validates the version, builds Windows portable and NSIS packages, generates checksums for the executables and license, and publishes after all uploads finish. Failed uploads remain a draft.
+
+The [macOS workflow](.github/workflows/macos-release.yml) checks out that exact application tag, builds a Universal DMG, verifies both architectures, embeds the MIT license, and adds the DMG with `SHA256SUMS-macos.txt` to the same release after Windows publishing completes. Push `mac-v0.6.1` to backfill macOS for an existing `v0.6.1` release.
 
 ## Scope and references
 

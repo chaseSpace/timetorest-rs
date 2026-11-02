@@ -1,0 +1,91 @@
+name: macos-release
+
+on:
+  push:
+    tags: ["v*", "mac-v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing application tag, for example v0.6.1
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: macos-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  universal:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      APPLE_SIGNING_IDENTITY: "-"
+      REQUESTED_TAG: ${{ inputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Select exact application source and retain publishing helper
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { execFileSync } from 'node:child_process';
+          const ref = process.env.REQUESTED_TAG || process.env.GITHUB_REF_NAME;
+          const tag = ref.startsWith('mac-') ? ref.slice(4) : ref;
+          if (!/^v\d+\.\d+\.\d+$/.test(tag)) throw new Error('Invalid application tag');
+          const helper = path.join(process.env.RUNNER_TEMP, 'add-macos-release.mjs');
+          fs.copyFileSync('.github/scripts/add-macos-release.mjs', helper);
+          execFileSync('git', ['checkout', tag], { stdio: 'inherit' });
+          const version = JSON.parse(fs.readFileSync('package.json', 'utf8')).version;
+          if ('v' + version !== tag) throw new Error('Tag/version mismatch');
+          const sha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+          fs.appendFileSync(process.env.GITHUB_ENV, `SOURCE_TAG=${tag}\nSOURCE_SHA=${sha}\nMAC_PUBLISH_HELPER=${helper}\n`);
+          NODE
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+          shared-key: macos-universal
+      - name: Use crates.io on the hosted runner
+        run: node -e "require('fs').rmSync('.cargo/config.toml')"
+      - run: npm ci
+      - name: Build Universal DMG
+        run: node node_modules/@tauri-apps/cli/tauri.js build --target universal-apple-darwin --bundles dmg --ci --config '{"bundle":{"resources":["../LICENSE"]}}'
+      - name: Verify both architectures and ad-hoc signature
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          const root = 'target/universal-apple-darwin/release';
+          const architectures = execFileSync('lipo', ['-archs', path.join(root, 'leafshield')], { encoding: 'utf8' });
+          assert(architectures.includes('arm64') && architectures.includes('x86_64'), 'Missing architecture');
+          execFileSync('codesign', ['--verify', '--deep', '--strict', path.join(root, 'bundle/macos/LeafShield.app')], { stdio: 'inherit' });
+          const resources = path.join(root, 'bundle/macos/LeafShield.app/Contents/Resources');
+          const license = fs.readdirSync(resources, { recursive: true }).find(name => path.basename(name) === 'LICENSE');
+          assert(license, 'MIT license must be included in the app bundle');
+          assert(fs.readFileSync(path.join(resources, license)).equals(fs.readFileSync('LICENSE')));
+          const directory = path.join(root, 'bundle/dmg');
+          const dmgs = fs.readdirSync(directory).filter(name => name.endsWith('.dmg'));
+          assert.equal(dmgs.length, 1);
+          fs.mkdirSync('artifacts', { recursive: true });
+          fs.copyFileSync(path.join(directory, dmgs[0]), `artifacts/LeafShield_${process.env.SOURCE_TAG.slice(1)}_universal.dmg`);
+          console.log('Verified Universal architectures:', architectures.trim());
+          NODE
+      - name: Add macOS assets to the matching release
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { pathToFileURL } = require('node:url');
+            const { default: publish } = await import(pathToFileURL(process.env.MAC_PUBLISH_HELPER).href);
+            await publish({ github, context, core });

@@ -4,7 +4,7 @@
 
 基于 Rust 和 Tauri 2 的桌面休息提醒与屏幕调节工具。通过定时休息、全屏壁纸和需要手动输入的正念文案，减少连续盯屏的时间。
 
-当前版本 **0.6.1**，提供 Windows x64 便携版和安装包。软件与文档均支持中英文；在“选项 → 语言”选择 `English` 或 `简体中文`，切换后立即生效并保存。
+当前版本 **0.6.1**，提供 Windows x64 便携版、安装包及 macOS 通用 DMG（Apple Silicon + Intel）。软件与文档均支持中英文；在“选项 → 语言”选择 `English` 或 `简体中文`，切换后立即生效并保存。
 
 ## 下载与运行
 
@@ -17,14 +17,18 @@
 | `SHA256SUMS.txt`                 | 程序和许可文件的 SHA256 校验值 |
 | `LICENSE`                        | MIT 许可文件                   |
 
-需要 Microsoft Edge WebView2 Runtime。正式程序的界面资源嵌入 EXE，运行时不启动 HTTP 服务，不需要 Node.js 或 Vite。发行文件未做代码签名。
+macOS 下载：`LeafShield_0.6.1_universal.dmg`，校验文件为 `SHA256SUMS-macos.txt`，同时校验 DMG 和 LICENSE。
+
+Windows 需要 Microsoft Edge WebView2 Runtime。正式程序的界面资源已嵌入安装包，运行时不启动 HTTP 服务，不需要 Node.js 或 Vite。Windows 发行文件未做代码签名；macOS 应用使用 ad-hoc 签名，未提供 Developer ID 签名或公证。
 
 1. 运行程序，设置工作和休息时长，默认 **45 分钟工作 / 2 分钟休息**。
 2. 到点后，每个显示器显示独立的置顶休息页，倒计时结束自动返回。
 3. 提前结束时，移动鼠标或按键唤出解锁区域，逐字输入所选文案。
 4. 关闭主窗口会收起到系统托盘，计时继续；从托盘重新打开窗口或退出。
 
-**便携版也默认开启当前用户开机启动**，可在“选项 → 开机启动”关闭。登录启动时主界面隐藏在托盘。移动或重命名 EXE 后手动运行一次，会根据保存的偏好更新启动路径，无需管理员权限。
+**Windows 便携版也默认开启当前用户开机启动**，可在“选项 → 开机启动”关闭。登录启动时主界面隐藏在托盘。移动或重命名 EXE 后手动运行一次，会根据保存的偏好更新启动路径，无需管理员权限。
+
+macOS 打开 DMG 后将 LeafShield 拖入 Applications，首次打开按系统提示授权。键盘防护需在“系统设置 → 隐私与安全性 → 辅助功能”授权后重启。ad-hoc 签名限制见 [Tauri macOS 签名说明](https://v2.tauri.app/distribute/sign/macos/)。
 
 ## 功能
 
@@ -99,7 +103,7 @@ Windows UI 测试使用系统 Edge，其他系统先执行 `npx playwright insta
 | 平台          | 当前范围                                                                                                                |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Windows x64   | 本次发布平台，已完成本机发布编译及部分原生验证；最新双屏交互仍由用户手动验收                                            |
-| macOS         | 提供源码适配和 CI 配置；需要 Xcode Command Line Tools，键盘防护需要辅助功能授权；本次未提供安装包或完成真机验收         |
+| macOS         | 通用 DMG 支持 Apple Silicon 和 Intel；CI 检查双架构和签名完整性。键盘防护需辅助功能授权，真机交互仍需手动验收。         |
 | Linux X11     | 提供源码适配和 CI 配置；依赖 GTK / WebKitGTK / AppIndicator / X11，前台检测使用 `xprop`；本次未提供安装包或完成真机验收 |
 | Linux Wayland | 全局键盘、前台检测和置顶行为受合成器限制，不保证与 X11 一致                                                             |
 
@@ -112,6 +116,8 @@ sudo apt-get install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo
 ## 发布
 
 更新 `package.json`、`package-lock.json`、`src-tauri/Cargo.toml`、`Cargo.lock`、`src-tauri/tauri.conf.json` 和界面版本号，在 `docs/releases/` 添加版本说明后推送 `v<版本号>` 标签。[发布工作流](.github/workflows/release.yml) 校验版本，构建 Windows 便携版和 NSIS 安装包，为程序和许可文件生成校验值，全部上传完成后公开 Release。失败的上传保留为草稿。
+
+[macOS 工作流](.github/workflows/macos-release.yml) 从原应用标签编译 Universal DMG，检查双架构、签名和内置 MIT 许可，在 Windows 发布完成后追加 DMG 及 `SHA256SUMS-macos.txt` 到同一 Release。已有版本可通过推送 `mac-v0.6.1` 为 `v0.6.1` 补发 Mac 安装包。
 
 ## 使用边界与资料
 
