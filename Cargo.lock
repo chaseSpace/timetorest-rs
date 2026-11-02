@@ -1955,6 +1955,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "leafshield-native"
+version = "0.7.0-dev.4"
+dependencies = [
+ "chrono",
+ "embed-resource",
+ "image",
+ "leafshield-core",
+ "serde_json",
+ "windows",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
 name = "libappindicator"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
