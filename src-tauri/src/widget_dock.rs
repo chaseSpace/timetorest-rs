@@ -253,7 +253,9 @@ fn tick(app: &tauri::AppHandle) -> Result<(), String> {
                     && expected
                         .padded((2.0 * scale).ceil() as i32)
                         .contains(pointer.x, pointer.y);
-                if hovered || pressed {
+                // A global button press may belong to another application.
+                // Dragging the widget is explicitly started by begin_drag.
+                if hovered {
                     controller.outside_since = None;
                     if controller.hidden {
                         controller.hidden = false;

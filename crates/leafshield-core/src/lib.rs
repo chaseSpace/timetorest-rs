@@ -1,7 +1,9 @@
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 pub mod docking;
+pub mod locale;
 pub mod wallpaper;
+use locale::{Language, phrase_index, phrases, tr};
 
 pub const PHRASES: [&str; 5] = [
     "我知道休息不足可能会伤害眼睛和大脑，继续解锁",
@@ -14,6 +16,7 @@ pub const PHRASES: [&str; 5] = [
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(default, rename_all = "camelCase")]
 pub struct Settings {
+    pub language: Language,
     pub work_minutes: u32,
     pub rest_minutes: u32,
     pub phrase: String,
@@ -32,6 +35,7 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            language: Language::default(),
             work_minutes: 45,
             rest_minutes: 2,
             phrase: PHRASES[0].into(),
@@ -54,19 +58,19 @@ impl Settings {
         if !(1500..=6500).contains(&self.temperature_kelvin)
             || !(20..=100).contains(&self.brightness_percent)
         {
-            return Err("色温应为 1500–6500 K，亮度应为 20–100%".into());
+            return Err(tr(self.language, "色温应为 1500–6500 K，亮度应为 20–100%"));
         }
         if !(1..=240).contains(&self.work_minutes) {
-            return Err("工作时长应为 1–240 分钟".into());
+            return Err(tr(self.language, "工作时长应为 1–240 分钟"));
         }
         if !(1..=60).contains(&self.rest_minutes) {
-            return Err("休息时长应为 1–60 分钟".into());
+            return Err(tr(self.language, "休息时长应为 1–60 分钟"));
         }
-        if !PHRASES.contains(&self.phrase.as_str()) {
-            return Err("解锁文案只能从 5 条预设中选择".into());
+        if !phrases(self.language).contains(&self.phrase) {
+            return Err(tr(self.language, "解锁文案只能从 5 条预设中选择"));
         }
         if !["forest", "mountain", "night", "custom"].contains(&self.theme.as_str()) {
-            return Err("请选择有效的休息主题".into());
+            return Err(tr(self.language, "请选择有效的休息主题"));
         }
         if self
             .custom_wallpaper
@@ -74,7 +78,7 @@ impl Settings {
             .is_some_and(|name| !wallpaper::owned_name(name))
             || (self.theme == "custom" && self.custom_wallpaper.is_none())
         {
-            return Err("请重新选择自定义背景图片".into());
+            return Err(tr(self.language, "请重新选择自定义背景图片"));
         }
         if self.whitelist.len() > 5
             || self
@@ -82,7 +86,10 @@ impl Settings {
                 .iter()
                 .any(|s| s.is_empty() || s.len() > 80 || s.contains(['/', '\\', '\n', '\r']))
         {
-            return Err("最多添加 5 个白名单程序，只填写进程文件名".into());
+            return Err(tr(
+                self.language,
+                "最多添加 5 个白名单程序，只填写进程文件名",
+            ));
         }
         Ok(())
     }
@@ -159,9 +166,9 @@ pub struct Engine {
 impl Engine {
     pub fn new(mut data: Persisted) -> Self {
         // Older releases allowed custom text. Preserve other preferences when migrating it.
-        if !PHRASES.contains(&data.settings.phrase.as_str()) {
-            data.settings.phrase = PHRASES[0].into();
-        }
+        data.settings.phrase = phrases(data.settings.language)
+            [phrase_index(&data.settings.phrase).unwrap_or(0)]
+        .clone();
         if data.settings.validate().is_err() {
             data.settings = Settings::default();
         }
@@ -197,7 +204,7 @@ impl Engine {
             LogEntry {
                 at: Local::now().to_rfc3339(),
                 kind: kind.into(),
-                detail: detail.into(),
+                detail: tr(self.data.settings.language, detail),
             },
         );
         self.data.logs.truncate(200);
@@ -214,7 +221,7 @@ impl Engine {
             settings: self.data.settings.clone(),
             statistics: self.data.statistics.clone(),
             logs: self.data.logs.clone(),
-            phrases: PHRASES.iter().map(|s| s.to_string()).collect(),
+            phrases: phrases(self.data.settings.language),
             emergency_count: self.emergency_count,
             deferred_by: self.deferred_by.clone(),
         }
@@ -307,13 +314,23 @@ impl Engine {
         match self.phase {
             Phase::Working => self.phase = Phase::Paused,
             Phase::Paused => self.phase = Phase::Working,
-            _ => return Err("休息期间不能暂停，请完成休息或手输正念文案".into()),
+            _ => {
+                return Err(tr(
+                    self.data.settings.language,
+                    "休息期间不能暂停，请完成休息或手输正念文案",
+                ));
+            }
         };
         Ok(())
     }
-    pub fn update_settings(&mut self, settings: Settings) -> Result<(), String> {
+    pub fn update_settings(&mut self, mut settings: Settings) -> Result<(), String> {
         if self.phase == Phase::Resting {
-            return Err("休息结束后可以修改设置".into());
+            return Err(tr(self.data.settings.language, "休息结束后可以修改设置"));
+        }
+        if settings.language != self.data.settings.language
+            && let Some(index) = phrase_index(&settings.phrase)
+        {
+            settings.phrase = phrases(settings.language)[index].clone();
         }
         settings.validate()?;
         let duration_changed = self.data.settings.work_minutes != settings.work_minutes;
@@ -329,10 +346,13 @@ impl Engine {
     }
     pub fn unlock(&mut self, text: &str) -> Result<Effect, String> {
         if self.phase != Phase::Resting {
-            return Err("当前没有正在进行的休息".into());
+            return Err(tr(self.data.settings.language, "当前没有正在进行的休息"));
         }
         if text != self.data.settings.phrase {
-            return Err("请完整、准确地手动输入上方文案".into());
+            return Err(tr(
+                self.data.settings.language,
+                "请完整、准确地手动输入上方文案",
+            ));
         }
         self.data.statistics.mindful_unlocks += 1;
         self.log("mindful", "手动输入正念文案，提前结束休息");
@@ -341,7 +361,7 @@ impl Engine {
     }
     pub fn emergency_key(&mut self) -> Result<Effect, String> {
         if self.phase != Phase::Resting || !self.data.settings.emergency_enabled {
-            return Err("紧急通道当前不可用".into());
+            return Err(tr(self.data.settings.language, "紧急通道当前不可用"));
         }
         if self.emergency_count == 0
             || self.clock_ms.saturating_sub(self.emergency_last_ms) > 2000
@@ -376,6 +396,67 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn language_change_preserves_preset_and_preferences() {
+        let mut e = Engine::new(Persisted::default());
+        let mut settings = e.data.settings.clone();
+        settings.phrase = PHRASES[2].into();
+        settings.temperature_kelvin = 4700;
+        settings.brightness_percent = 89;
+        e.update_settings(settings).unwrap();
+        let mut settings = e.data.settings.clone();
+        settings.language = Language::English;
+        e.update_settings(settings).unwrap();
+        assert_eq!(e.data.settings.phrase, phrases(Language::English)[2]);
+        assert_eq!(e.snapshot().phrases.len(), 5);
+        assert_eq!(e.data.settings.temperature_kelvin, 4700);
+        assert_eq!(e.data.settings.brightness_percent, 89);
+        let mut settings = e.data.settings.clone();
+        settings.language = Language::Chinese;
+        e.update_settings(settings).unwrap();
+        assert_eq!(e.data.settings.phrase, PHRASES[2]);
+    }
+    #[test]
+    fn english_unlock_requires_the_exact_english_phrase() {
+        let mut settings = Settings {
+            language: Language::English,
+            phrase: phrases(Language::English)[0].clone(),
+            ..Settings::default()
+        };
+        let mut e = Engine::new(Persisted {
+            settings: settings.clone(),
+            ..Default::default()
+        });
+        e.start_rest();
+        assert!(e.unlock(PHRASES[0]).is_err());
+        assert!(e.unlock(&settings.phrase.to_lowercase()).is_err());
+        assert_eq!(e.unlock(&settings.phrase).unwrap(), Effect::Unlock);
+        settings.phrase = PHRASES[0].into();
+        assert!(settings.validate().is_err());
+        settings.phrase = "An arbitrary custom unlock phrase".into();
+        assert!(settings.validate().is_err());
+    }
+    #[test]
+    fn legacy_configuration_defaults_to_chinese_and_language_round_trips() {
+        let old: Persisted =
+            serde_json::from_str(r#"{"settings":{"workMinutes":25,"restMinutes":2}}"#).unwrap();
+        let e = Engine::new(old);
+        assert_eq!(e.data.settings.language, Language::Chinese);
+        assert_eq!(e.data.settings.work_minutes, 25);
+        let data = Persisted {
+            settings: Settings {
+                language: Language::English,
+                phrase: phrases(Language::English)[4].clone(),
+                ..Settings::default()
+            },
+            ..Default::default()
+        };
+        let decoded: Persisted =
+            serde_json::from_slice(&serde_json::to_vec(&data).unwrap()).unwrap();
+        let restored = Engine::new(decoded);
+        assert_eq!(restored.data.settings.language, Language::English);
+        assert_eq!(restored.data.settings.phrase, phrases(Language::English)[4]);
+    }
     fn engine(work: u32, rest: u32) -> Engine {
         Engine::new(Persisted {
             settings: Settings {

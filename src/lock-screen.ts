@@ -1,3 +1,4 @@
+import { html, tr } from "./i18n";
 import "./lock-screen.css";
 import { cursorPosition, getCurrentWindow } from "@tauri-apps/api/window";
 import { call, native } from "./bridge";
@@ -24,7 +25,9 @@ export class LockScreen {
   ) {
     const s = initial.settings;
     document.body.className = "lock-body";
-    root.innerHTML = `<section class="lock-screen" aria-label="休息锁屏"><img class="lock-photo" alt=""/><div class="lock-shade"></div><header class="lock-header"><span>一叶 <small>LEAFSHIELD</small></span>${preview ? '<button id="close-preview">关闭预览 ×</button>' : '<span class="lock-status">休息时间</span>'}</header><main class="lock-content"><h1>休息一下</h1><div class="lock-timer" data-rest-timer></div><p class="lock-hint">看看远处，放松双眼。</p><section class="lock-unlock" aria-label="提前结束休息"><p class="lock-instruction">需要提前回来？请手动输入以下文案</p><blockquote id="unlock-phrase">${esc(s.phrase)}</blockquote><label class="sr-only" for="unlock-input">手动输入正念文案</label><input id="unlock-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="逐字输入，不支持粘贴" maxlength="240"/><div class="lock-actions"><span id="unlock-progress">0 / ${[...s.phrase].length} 字</span><button id="unlock-button" disabled>正念解锁</button></div></section>${s.emergencyEnabled ? '<button class="lock-emergency-toggle" id="emergency-toggle" aria-expanded="false">突发紧急情况？</button><div class="lock-emergency" id="emergency-panel" hidden><p>20 秒内手动敲击 50 次；间隔超过 2 秒重新计数，长按无效。解锁会记录日志。</p><progress id="emergency-fill" value="0" max="50"></progress><b><span id="emergency-count">0</span> / 50</b></div>' : ""}</main><footer class="lock-footer"><span>${preview ? "预览不会锁定桌面或记录解锁" : "休息结束后自动返回"}</span><span id="photo-credit"></span></footer></section>`;
+    root.innerHTML = html(
+      `<section class="lock-screen" aria-label="休息锁屏"><img class="lock-photo" alt=""/><div class="lock-shade"></div><header class="lock-header"><span>一叶 <small>LEAFSHIELD</small></span>${preview ? '<button id="close-preview">关闭预览 ×</button>' : '<span class="lock-status">休息时间</span>'}</header><main class="lock-content"><h1>休息一下</h1><div class="lock-timer" data-rest-timer></div><p class="lock-hint">看看远处，放松双眼。</p><section class="lock-unlock" aria-label="提前结束休息"><p class="lock-instruction">需要提前回来？请手动输入以下文案</p><blockquote id="unlock-phrase">${esc(s.phrase)}</blockquote><label class="sr-only" for="unlock-input">手动输入正念文案</label><input id="unlock-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="逐字输入，不支持粘贴" maxlength="240"/><div class="lock-actions"><span id="unlock-progress">0 / ${[...s.phrase].length} 字</span><button id="unlock-button" disabled>正念解锁</button></div></section>${s.emergencyEnabled ? '<button class="lock-emergency-toggle" id="emergency-toggle" aria-expanded="false">突发紧急情况？</button><div class="lock-emergency" id="emergency-panel" hidden><p>20 秒内手动敲击 50 次；间隔超过 2 秒重新计数，长按无效。解锁会记录日志。</p><progress id="emergency-fill" value="0" max="50"></progress><b><span id="emergency-count">0</span> / 50</b></div>' : ""}</main><footer class="lock-footer"><span>${preview ? "预览不会锁定桌面或记录解锁" : "休息结束后自动返回"}</span><span id="photo-credit"></span></footer></section>`,
+    );
     const input = root.querySelector<HTMLInputElement>("#unlock-input")!;
     const button = root.querySelector<HTMLButtonElement>("#unlock-button")!;
     const unlockPanel = root.querySelector<HTMLElement>(".lock-unlock")!;
@@ -146,7 +149,9 @@ export class LockScreen {
       button.disabled = composing || input.value !== s.phrase;
       input.setAttribute("aria-invalid", String(mismatch));
       progress.classList.toggle("is-mismatch", mismatch);
-      progress.textContent = `${[...input.value].length} / ${[...s.phrase].length} 字${mismatch ? " · 文案不匹配" : ""}`;
+      progress.textContent = tr(
+        `${[...input.value].length} / ${[...s.phrase].length} 字${mismatch ? " · 文案不匹配" : ""}`,
+      );
     };
     input.addEventListener(
       "compositionstart",
@@ -251,13 +256,15 @@ export class LockScreen {
     if (document.hasFocus()) focusInput();
   }
   update(snapshot: Snapshot) {
-    this.root.querySelector("[data-rest-timer]")!.textContent = time(
-      this.preview
-        ? snapshot.settings.restMinutes * 60
-        : snapshot.remainingSeconds,
+    this.root.querySelector("[data-rest-timer]")!.textContent = tr(
+      time(
+        this.preview
+          ? snapshot.settings.restMinutes * 60
+          : snapshot.remainingSeconds,
+      ),
     );
     const count = this.root.querySelector("#emergency-count");
-    if (count) count.textContent = String(snapshot.emergencyCount);
+    if (count) count.textContent = tr(String(snapshot.emergencyCount));
     const meter =
       this.root.querySelector<HTMLProgressElement>("#emergency-fill");
     if (meter) meter.value = snapshot.emergencyCount;
@@ -288,10 +295,10 @@ export class LockScreen {
       image.onerror = null;
       image.src = "/wallpapers/forest.jpg";
       this.root.querySelector("#photo-credit")!.textContent =
-        "Ingmar / Unsplash";
+        tr("Ingmar / Unsplash");
     };
     image.src = src;
-    this.root.querySelector("#photo-credit")!.textContent = credit;
+    this.root.querySelector("#photo-credit")!.textContent = tr(credit);
   }
   destroy() {
     this.disposed = true;

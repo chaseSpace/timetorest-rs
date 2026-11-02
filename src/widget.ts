@@ -1,10 +1,13 @@
+import { html, tr } from "./i18n";
 import { call, native, subscribeDock, type WidgetDock } from "./bridge";
 export async function renderWidget(
   root: HTMLElement,
   icon: (name: string) => string,
   act: (command: string, args?: Record<string, unknown>) => Promise<boolean>,
 ) {
-  root.innerHTML = `<div class="floating-widget"><div class="widget-expanded"><span class="widget-leaf">${icon("leaf")}</span><div class="widget-time"><small data-phase></small><b data-timer></b></div><button id="open-main" aria-label="打开一叶">${icon("arrow")}</button></div><span class="dock-tab" title="靠近展开悬浮计时" aria-label="展开悬浮计时"></span></div>`;
+  root.innerHTML = html(
+    `<div class="floating-widget"><div class="widget-expanded"><span class="widget-leaf">${icon("leaf")}</span><div class="widget-time"><small data-phase></small><b data-timer></b></div><button id="open-main" aria-label="打开一叶">${icon("arrow")}</button></div><span class="dock-tab" title="靠近展开悬浮计时" aria-label="展开悬浮计时"></span></div>`,
+  );
   root.querySelector<HTMLButtonElement>("#open-main")!.onclick = () => {
     void act("window_action", { action: "show" });
   };

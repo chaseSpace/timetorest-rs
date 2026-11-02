@@ -5,7 +5,9 @@ export interface StartupInfo {
   pathMatches: boolean;
   executable: string;
 }
+import type { Language } from "./i18n";
 export interface Settings {
+  language: Language;
   workMinutes: number;
   restMinutes: number;
   phrase: string;
@@ -67,6 +69,7 @@ export const phrases = [
   "此刻我愿意放慢脚步，给眼睛和身体一点温柔",
 ];
 export const defaults: Settings = {
+  language: "zh-CN",
   workMinutes: 45,
   restMinutes: 2,
   phrase: phrases[0],

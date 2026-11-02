@@ -4,7 +4,7 @@
 
 基于 Rust 和 Tauri 2 的桌面休息提醒与屏幕调节工具。通过定时休息、全屏壁纸和需要手动输入的正念文案，减少连续盯屏的时间。
 
-当前版本 **0.5.4**，提供 Windows x64 便携版和安装包。软件界面及五条解锁预设目前为中文；项目文档提供中英文版本。
+当前版本 **0.6.0**，提供 Windows x64 便携版和安装包。软件与文档均支持中英文；在“选项 → 语言”选择 `English` 或 `简体中文`，切换后立即生效并保存。
 
 ## 下载与运行
 
@@ -12,8 +12,8 @@
 
 | 文件                             | 用途                           |
 | -------------------------------- | ------------------------------ |
-| `leafshield-0.5.4.exe`           | 便携版，放在固定目录后直接运行 |
-| `LeafShield_0.5.4_x64-setup.exe` | Windows 当前用户安装包         |
+| `leafshield-0.6.0.exe`           | 便携版，放在固定目录后直接运行 |
+| `LeafShield_0.6.0_x64-setup.exe` | Windows 当前用户安装包         |
 | `SHA256SUMS.txt`                 | 上述两个文件的 SHA256 校验值   |
 
 需要 Microsoft Edge WebView2 Runtime。正式程序的界面资源嵌入 EXE，运行时不启动 HTTP 服务，不需要 Node.js 或 Vite。发行文件未做代码签名。
@@ -26,6 +26,8 @@
 **便携版也默认开启当前用户开机启动**，可在“选项 → 开机启动”关闭。登录启动时主界面隐藏在托盘。移动或重命名 EXE 后手动运行一次，会根据保存的偏好更新启动路径，无需管理员权限。
 
 ## 功能
+
+切换语言时，设置页、锁屏、悬浮窗、托盘和提醒一起切换；五条解锁文案也切换为对应语言，并保留所选序号。界面截图展示中文版。
 
 | 功能             | 行为                                                                                                   |
 | ---------------- | ------------------------------------------------------------------------------------------------------ |
@@ -63,45 +65,6 @@
 | Windows 集成 | Win32 / Windows COM：系统颜色矩阵、键盘钩子、前台进程、快捷方式解析、当前用户启动项   |
 | 验证和发布   | Rust 测试、rustfmt / Clippy、Playwright、GitHub Actions                               |
 
-## 实现原理
-
-```mermaid
-flowchart LR
-    UI[TypeScript / HTML / CSS] <-->|Tauri IPC / timer-update| App[Rust 桌面层]
-    App --> Core[leafshield-core 状态机与纯逻辑]
-    App --> Native[操作系统 API]
-    App --> Files[本地 JSON 与图片]
-    App --> Windows[主窗口 / 多屏休息页 / 悬浮窗 / 提醒]
-```
-
-### 计时与通信
-
-[`leafshield-core`](crates/leafshield-core/src/lib.rs) 管理 `working`、`paused`、`resting`、`deferred` 四种状态，输出提醒、锁定、解锁等效果。Rust 后台线程每秒根据 `Instant` 单调时钟计算实际经过的时间，计时不依赖浏览器定时器。状态通过 `timer-update` 推送到各个 WebView；前端通过本地 Tauri IPC 发起操作，关键参数在 Rust 再次校验。
-
-### 多屏与输入焦点
-
-[`main.rs`](src-tauri/src/main.rs) 为每个显示器创建独立全屏置顶窗口，休息期间每三秒检查显示器变化。解锁区域最初透明且不接收鼠标点击，仅活动窗口提前准备输入焦点，以接收第一次按键和中文组合输入。
-
-[`lock-screen.ts`](src/lock-screen.ts) 比较桌面物理鼠标坐标，并确认鼠标位于当前窗口内，过滤创建或定位窗口产生的移动消息。唤出时处理原生窗口、WebView 和文本框焦点；另一屏失去焦点后隐藏解锁区域。后端要求完整文案精确匹配；前端只对错字或多字标错，正确但尚未输完的前缀不报错。
-
-### 色温与亮度
-
-Windows 通过 [`MagSetFullscreenColorEffect`](https://learn.microsoft.com/windows/win32/api/magnification/nf-magnification-magsetfullscreencoloreffect) 设置系统全屏颜色矩阵，不使用橙色或黑色遮罩窗口。[颜色计算](src-tauri/src/display/colour.rs) 对黑体光谱和近似 CIE XYZ 匹配函数积分，转换为 RGB 增益，以 6500K 归一化；亮度乘在 RGB 增益上。颜色加法偏移保持零，黑色仍为黑色。
-
-前端每 50ms 合并拖动预览，原生层用 180ms 平滑过渡，稳定后停止重复写入。关闭调节或正常退出恢复先前系统效果；6500K / 100% 为中性设置。色温是近似白点，亮度是软件调暗，**不调整硬件背光，也不等于显示器校色**。
-
-### 悬浮窗与系统集成
-
-[`docking.rs`](crates/leafshield-core/src/docking.rs) 使用物理像素计算吸附和收起后的窄条矩形；[`widget_dock.rs`](src-tauri/src/widget_dock.rs) 检查鼠标与显示器工作区，直接缩小原生窗口，避免把大部分窗口移到相邻屏幕。
-
-Windows 白名单通过前台窗口确定进程，`.lnk` 使用 COM 解析目标 EXE，选择时不启动文件。启动项使用当前用户的 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`，并独立记录用户关闭自启的选择。键盘钩子检查需要拦截的系统组合键，不保存任意键入内容。
-
-### 本地存储与图片
-
-Windows 数据目录为 `%APPDATA%\com.leafshield.desktop\`，包含 `settings.json`、`startup.json` 和自定义背景。设置先写临时文件再原子替换；短暂文件占用会重试，损坏 JSON 会保留备份并恢复默认值。设置、统计和日志会保存，**重启后开始新的工作周期**。
-
-图片在 Rust 端限制尺寸和解码内存、重新编码，用处理后内容的 SHA256 命名。图片只在背景改变时加载，不混入每秒计时事件。
-
 ## 从源码构建
 
 需要 Node.js **22.12+**、Rust stable 和对应平台的 Tauri 原生依赖。Windows 另需 MSVC C++ Build Tools、Windows SDK 和 WebView2。
@@ -110,7 +73,7 @@ Windows 数据目录为 `%APPDATA%\com.leafshield.desktop\`，包含 `settings.j
 git clone git@github.com:chaseSpace/timetorest-rs.git
 cd timetorest-rs
 npm ci
-npm run build             # 便携版 → artifacts/leafshield-0.5.4.exe
+npm run build             # 便携版 → artifacts/leafshield-0.6.0.exe
 npm run build:installer   # Windows NSIS 安装包
 ```
 

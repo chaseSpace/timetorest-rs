@@ -6,6 +6,7 @@ mod startup;
 mod wallpapers;
 mod widget_dock;
 
+use leafshield_core::locale::tr;
 use leafshield_core::{Effect, Engine, Persisted, Phase, Settings, Snapshot};
 use serde::Serialize;
 use std::{
@@ -28,6 +29,36 @@ struct AppState {
     smoke_ready: std::sync::atomic::AtomicBool,
     smoke_title: Mutex<Option<String>>,
     dock: Mutex<widget_dock::Controller>,
+}
+fn localize(app: &tauri::AppHandle, text: &str) -> String {
+    let language = app
+        .state::<AppState>()
+        .runtime
+        .lock()
+        .unwrap()
+        .engine
+        .data
+        .settings
+        .language;
+    tr(language, text)
+}
+fn sync_language(app: &tauri::AppHandle) {
+    if let Some(tray) = app.tray_by_id("leafshield")
+        && let Ok(menu) = tray_menu(app)
+    {
+        let _ = tray.set_menu(Some(menu));
+    }
+    for (label, window) in app.webview_windows() {
+        let title = match label.as_str() {
+            "main" => "一叶 · LeafShield",
+            "widget" => "一叶 · 悬浮计时",
+            "preview" => "休息预览 · 一叶",
+            "warning" => "休息提醒",
+            _ if label.starts_with("rest-") => "休息时间 · 一叶",
+            _ => continue,
+        };
+        let _ = window.set_title(&localize(app, title));
+    }
 }
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -181,6 +212,15 @@ async fn save_settings(
     settings: Settings,
 ) -> Result<ViewState, String> {
     main_only(&window)?;
+    let previous_language = app
+        .state::<AppState>()
+        .runtime
+        .lock()
+        .unwrap()
+        .engine
+        .data
+        .settings
+        .language;
     wallpapers::validate(&app, &settings)?;
     let result = mutate(&app, |e| {
         e.update_settings(settings)?;
@@ -189,6 +229,9 @@ async fn save_settings(
     display::sync(&app);
     let result = result?;
     configure_widget(&app)?;
+    if result.timer.settings.language != previous_language {
+        sync_language(&app);
+    }
     Ok(result)
 }
 #[tauri::command]
@@ -311,7 +354,7 @@ async fn preview_rest(app: tauri::AppHandle, window: tauri::WebviewWindow) -> Re
         "preview",
         WebviewUrl::App("index.html#preview".into()),
     )
-    .title("休息预览 · 一叶")
+    .title(localize(&app, "休息预览 · 一叶"))
     .inner_size(760.0, 620.0)
     .center()
     .decorations(false)
@@ -354,7 +397,7 @@ fn configure_widget(app: &tauri::AppHandle) -> Result<(), String> {
     } else {
         let window =
             WebviewWindowBuilder::new(app, "widget", WebviewUrl::App("index.html#widget".into()))
-                .title("一叶 · 悬浮计时")
+                .title(localize(app, "一叶 · 悬浮计时"))
                 .inner_size(widget_dock::WIDTH, widget_dock::HEIGHT)
                 .decorations(false)
                 .transparent(true)
@@ -395,7 +438,7 @@ fn rest_windows(app: &tauri::AppHandle, hidden: bool) -> Result<usize, String> {
         }
         let window =
             WebviewWindowBuilder::new(app, &label, WebviewUrl::App("index.html#rest".into()))
-                .title("休息时间 · 一叶")
+                .title(localize(app, "休息时间 · 一叶"))
                 .decorations(false)
                 .always_on_top(true)
                 .skip_taskbar(true)
@@ -506,15 +549,18 @@ fn warning(app: &tauri::AppHandle, seconds: u32) {
     let _ = app
         .notification()
         .builder()
-        .title("一叶 · 休息将至")
-        .body(format!("{seconds} 秒后开始休息，记得保存手边的工作。"))
+        .title(localize(app, "一叶 · 休息将至"))
+        .body(
+            localize(app, "{seconds} 秒后开始休息，记得保存手边的工作。")
+                .replace("{seconds}", &seconds.to_string()),
+        )
         .show();
     if let Some(old) = app.get_webview_window("warning") {
         let _ = old.destroy();
     }
     if let Ok(window) =
         WebviewWindowBuilder::new(app, "warning", WebviewUrl::App("index.html#warning".into()))
-            .title("休息提醒")
+            .title(localize(app, "休息提醒"))
             .inner_size(360.0, 130.0)
             .decorations(false)
             .always_on_top(true)
@@ -565,17 +611,32 @@ fn tray_icon(progress: f64) -> tauri::image::Image<'static> {
     }
     tauri::image::Image::new_owned(pixels, 32, 32)
 }
-fn setup_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
+fn tray_menu(app: &tauri::AppHandle) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
     use tauri::menu::{Menu, MenuItem};
-    let show = MenuItem::with_id(app, "show", "打开一叶", true, None::<&str>)?;
-    let pause = MenuItem::with_id(app, "pause", "暂停 / 继续计时", true, None::<&str>)?;
-    let rest = MenuItem::with_id(app, "rest", "现在休息", true, None::<&str>)?;
-    let widget = MenuItem::with_id(app, "widget", "显示 / 隐藏悬浮计时", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "退出一叶", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&show, &pause, &rest, &widget, &quit])?;
+    let show = MenuItem::with_id(app, "show", localize(app, "打开一叶"), true, None::<&str>)?;
+    let pause = MenuItem::with_id(
+        app,
+        "pause",
+        localize(app, "暂停 / 继续计时"),
+        true,
+        None::<&str>,
+    )?;
+    let rest = MenuItem::with_id(app, "rest", localize(app, "现在休息"), true, None::<&str>)?;
+    let widget = MenuItem::with_id(
+        app,
+        "widget",
+        localize(app, "显示 / 隐藏悬浮计时"),
+        true,
+        None::<&str>,
+    )?;
+    let quit = MenuItem::with_id(app, "quit", localize(app, "退出一叶"), true, None::<&str>)?;
+    Menu::with_items(app, &[&show, &pause, &rest, &widget, &quit])
+}
+fn setup_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
+    let menu = tray_menu(app)?;
     tauri::tray::TrayIconBuilder::with_id("leafshield")
         .icon(tray_icon(1.0))
-        .tooltip("一叶 · 给眼睛一点留白")
+        .tooltip(localize(app, "一叶 · 给眼睛一点留白"))
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| {
@@ -672,14 +733,18 @@ fn start_worker(app: tauri::AppHandle) {
             if let Some(tray) = app.tray_by_id("leafshield") {
                 let seconds = snapshot.timer.remaining_seconds;
                 let _ = tray.set_tooltip(Some(format!(
-                    "一叶 · {:02}:{:02} · {}",
+                    "{} · {:02}:{:02} · {}",
+                    localize(&app, "一叶"),
                     seconds / 60,
                     seconds % 60,
-                    if snapshot.timer.phase == Phase::Resting {
-                        "休息中"
-                    } else {
-                        "专注中"
-                    }
+                    localize(
+                        &app,
+                        if snapshot.timer.phase == Phase::Resting {
+                            "休息中"
+                        } else {
+                            "专注中"
+                        }
+                    )
                 )));
                 if ticks.is_multiple_of(15) || effect != Effect::None {
                     let _ = tray.set_icon(Some(tray_icon(
@@ -742,7 +807,7 @@ fn main() {
                 }
                 handle.exit(1);
             });
-        } else { if let Err(error) = startup::initialize(app.handle()) { app.state::<AppState>().runtime.lock().unwrap().notice = Some(error); } display::start(app.handle().clone()); platform::install(); setup_tray(app.handle())?; configure_widget(app.handle()).map_err(std::io::Error::other)?; start_worker(app.handle().clone()); widget_dock::start(app.handle().clone()); if !background_start && let Some(main) = app.get_webview_window("main") { main.show()?; } }
+        } else { if let Err(error) = startup::initialize(app.handle()) { app.state::<AppState>().runtime.lock().unwrap().notice = Some(error); } display::start(app.handle().clone()); platform::install(); setup_tray(app.handle())?; sync_language(app.handle()); configure_widget(app.handle()).map_err(std::io::Error::other)?; start_worker(app.handle().clone()); widget_dock::start(app.handle().clone()); if !background_start && let Some(main) = app.get_webview_window("main") { main.show()?; } }
         Ok(())
     }).on_window_event(|window, event| {
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {

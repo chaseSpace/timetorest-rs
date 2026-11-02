@@ -4,7 +4,7 @@
 
 A desktop break reminder and screen adjustment utility built with Rust and Tauri 2. Scheduled breaks, full-screen photographs, and manually typed mindfulness phrases help you step away from continuous screen work.
 
-Current version: **0.5.4**, with Windows x64 portable and installer packages. The application interface and its five unlock phrases are currently in Chinese; project documentation is available in Chinese and English.
+Current version: **0.6.0**, with Windows x64 portable and installer packages. Both the application and documentation support Chinese and English. Open 选项 (Options) → 语言 (Language), then choose `English` or `简体中文`. Changes apply immediately and persist.
 
 ## Download and run
 
@@ -12,8 +12,8 @@ Download from [Releases](https://github.com/chaseSpace/timetorest-rs/releases/la
 
 | File                             | Purpose                                                               |
 | -------------------------------- | --------------------------------------------------------------------- |
-| `leafshield-0.5.4.exe`           | Portable executable; keep it in a stable location and run it directly |
-| `LeafShield_0.5.4_x64-setup.exe` | Windows installer for the current user                                |
+| `leafshield-0.6.0.exe`           | Portable executable; keep it in a stable location and run it directly |
+| `LeafShield_0.6.0_x64-setup.exe` | Windows installer for the current user                                |
 | `SHA256SUMS.txt`                 | SHA256 checksums for those two files                                  |
 
 Microsoft Edge WebView2 Runtime is required. Production UI assets are embedded in the executable: running the app does not start an HTTP server or require Node.js or Vite. Release executables are not code-signed.
@@ -26,6 +26,8 @@ Microsoft Edge WebView2 Runtime is required. Production UI assets are embedded i
 **Start at login is enabled by default, including in portable mode.** Disable it under Options → Start at login. Login startup keeps the main window in the tray. After moving or renaming the executable, run it manually once to update the startup path according to your saved preference. Administrator rights are not required.
 
 ## Features
+
+Language changes cover settings, break screens, the floating timer, tray, and reminders. The five unlock phrases switch to the matching language while keeping the selected preset number. Screenshots show the Chinese interface.
 
 | Feature                   | Behavior                                                                                                                                                                               |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -63,45 +65,6 @@ Custom backgrounds accept JPEG / PNG / WebP up to 5 MB, 16 megapixels, and 8192 
 | Windows integration       | Win32 / Windows COM: system color matrix, keyboard hook, foreground processes, shortcut resolution, per-user startup |
 | Verification and releases | Rust tests, rustfmt / Clippy, Playwright, GitHub Actions                                                             |
 
-## How it works
-
-```mermaid
-flowchart LR
-    UI[TypeScript / HTML / CSS] <-->|Tauri IPC / timer-update| App[Rust desktop layer]
-    App --> Core[leafshield-core state machine and pure logic]
-    App --> Native[Operating system APIs]
-    App --> Files[Local JSON and images]
-    App --> Windows[Main / per-monitor break / widget / reminder windows]
-```
-
-### Timing and communication
-
-[`leafshield-core`](crates/leafshield-core/src/lib.rs) manages four states: `working`, `paused`, `resting`, and `deferred`, producing warning, lock, and unlock effects. A Rust worker measures actual elapsed time using the monotonic `Instant` clock once per second, independently of browser timer scheduling. State snapshots reach the WebViews through `timer-update`; interface actions use local Tauri IPC, with important values validated again in Rust.
-
-### Multiple monitors and input focus
-
-[`main.rs`](src-tauri/src/main.rs) creates one full-screen, always-on-top window per monitor and checks for monitor changes every three seconds during breaks. The unlock area initially stays transparent and ignores mouse clicks. Only the active window primes its input for the first key and IME composition.
-
-[`lock-screen.ts`](src/lock-screen.ts) compares physical desktop pointer coordinates and checks that the pointer is inside the receiving window, filtering movement messages caused by window creation or positioning. Revealing the area coordinates native window, WebView, and input focus. The previous screen hides its area when focus leaves. The backend requires an exact phrase match; the frontend marks incorrect or excess text while accepting a correct but incomplete prefix without an error.
-
-### Color temperature and brightness
-
-On Windows, [`MagSetFullscreenColorEffect`](https://learn.microsoft.com/windows/win32/api/magnification/nf-magnification-magsetfullscreencoloreffect) applies a system full-screen color matrix instead of orange or black overlay windows. The [color calculation](src-tauri/src/display/colour.rs) integrates a blackbody spectrum against approximate CIE XYZ matching functions, converts to RGB gains, and normalizes at 6500K. Brightness scales those gains. Additive offsets stay zero, so black stays black.
-
-The frontend coalesces drag previews every 50ms. Native transitions take 180ms, and unchanged values stop repeated writes. Disabling adjustment or exiting normally restores the previous system effect; 6500K / 100% is neutral. Temperature is an approximate white point and brightness is software dimming: **it does not change hardware backlight or calibrate a monitor**.
-
-### Floating timer and OS integration
-
-[`docking.rs`](crates/leafshield-core/src/docking.rs) calculates docking and collapsed strip rectangles in physical pixels. [`widget_dock.rs`](src-tauri/src/widget_dock.rs) checks pointer position and monitor work areas, resizing the native window instead of moving most of it off-screen into another monitor.
-
-The Windows whitelist resolves the process owning the foreground window. COM resolves `.lnk` targets without launching them. Startup uses the current user's `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, alongside a separate saved preference that remembers disabling it. The keyboard hook checks protected system combinations without recording arbitrary typed content.
-
-### Local storage and images
-
-Windows data lives in `%APPDATA%\com.leafshield.desktop\`, including `settings.json`, `startup.json`, and custom backgrounds. Settings are written to a temporary file and atomically replaced, with retries for brief file locks. Invalid JSON is backed up before defaults are restored. Settings, statistics, and logs persist; **restarting begins a new work interval**.
-
-Rust limits image dimensions and decoder memory, re-encodes images, and names them by the SHA256 of the processed content. Images load only when the background changes rather than appearing in every timer event.
-
 ## Build from source
 
 Install Node.js **22.12+**, Rust stable, and your platform's native Tauri dependencies. Windows additionally needs MSVC C++ Build Tools, the Windows SDK, and WebView2.
@@ -110,7 +73,7 @@ Install Node.js **22.12+**, Rust stable, and your platform's native Tauri depend
 git clone git@github.com:chaseSpace/timetorest-rs.git
 cd timetorest-rs
 npm ci
-npm run build             # Portable executable → artifacts/leafshield-0.5.4.exe
+npm run build             # Portable executable → artifacts/leafshield-0.6.0.exe
 npm run build:installer   # Windows NSIS installer
 ```
 

@@ -115,27 +115,40 @@ mod windows_picker {
         }
         Ok(names)
     }
-    pub fn pick(owner: usize) -> Result<Vec<String>, String> {
+    pub fn pick(
+        owner: usize,
+        language: leafshield_core::locale::Language,
+    ) -> Result<Vec<String>, String> {
         let _apartment = Apartment::new()?;
+        let wide_label = |text: &str| {
+            leafshield_core::locale::tr(language, text)
+                .encode_utf16()
+                .chain(Some(0))
+                .collect::<Vec<u16>>()
+        };
+        let title = wide_label("选择白名单程序（EXE 或快捷方式）");
+        let apps = wide_label("程序和快捷方式 (*.exe;*.lnk)");
+        let executables = wide_label("可执行程序 (*.exe)");
+        let shortcuts = wide_label("快捷方式 (*.lnk)");
         unsafe {
             let dialog: IFileOpenDialog =
                 CoCreateInstance(&FileOpenDialog, None, CLSCTX_INPROC_SERVER)
                     .map_err(|e| e.to_string())?;
             dialog
-                .SetTitle(w!("选择白名单程序（EXE 或快捷方式）"))
+                .SetTitle(PCWSTR(title.as_ptr()))
                 .map_err(|e| e.to_string())?;
             dialog
                 .SetFileTypes(&[
                     COMDLG_FILTERSPEC {
-                        pszName: w!("程序和快捷方式 (*.exe;*.lnk)"),
+                        pszName: PCWSTR(apps.as_ptr()),
                         pszSpec: w!("*.exe;*.lnk"),
                     },
                     COMDLG_FILTERSPEC {
-                        pszName: w!("可执行程序 (*.exe)"),
+                        pszName: PCWSTR(executables.as_ptr()),
                         pszSpec: w!("*.exe"),
                     },
                     COMDLG_FILTERSPEC {
-                        pszName: w!("快捷方式 (*.lnk)"),
+                        pszName: PCWSTR(shortcuts.as_ptr()),
                         pszSpec: w!("*.lnk"),
                     },
                 ])
@@ -290,7 +303,16 @@ pub async fn pick_whitelist_programs(
         }
         let _busy = Busy;
         let owner = window.hwnd().map_err(|e| e.to_string())?.0 as usize;
-        tauri::async_runtime::spawn_blocking(move || windows_picker::pick(owner))
+        let language = app
+            .state::<crate::AppState>()
+            .runtime
+            .lock()
+            .unwrap()
+            .engine
+            .data
+            .settings
+            .language;
+        tauri::async_runtime::spawn_blocking(move || windows_picker::pick(owner, language))
             .await
             .map_err(|e| e.to_string())?
     }

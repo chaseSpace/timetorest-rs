@@ -504,6 +504,33 @@ p {
   gap: 9px;
   margin-bottom: 12px;
 }
+.options-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.options-heading label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+}
+.options-heading select {
+  width: 108px;
+  height: 23px;
+}
+:root[lang="en"] .utility-nav button {
+  font-size: 12px;
+}
+:root[lang="en"] .theme-row {
+  gap: 5px;
+}
+:root[lang="en"] .theme-row .classic-button {
+  padding: 3px 5px;
+}
+:root[lang="en"] .utility-toggle small {
+  font-size: 10px;
+}
 .theme-row > span {
   font-size: 12px;
   flex: 1;

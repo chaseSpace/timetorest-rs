@@ -2,6 +2,7 @@ import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { defaults, phrases, type Settings, type Snapshot } from "./model";
 import { preparePreview } from "./wallpaper";
+import { phrasesFor } from "./i18n";
 
 export const native = isTauri();
 const saved = (() => {
@@ -12,7 +13,12 @@ const saved = (() => {
   }
 })();
 const settings: Settings = { ...defaults, ...saved };
-if (!phrases.includes(settings.phrase)) settings.phrase = phrases[0];
+if (!["zh-CN", "en"].includes(settings.language)) settings.language = "zh-CN";
+const phraseIndex = phrases.findIndex(
+  (phrase, index) =>
+    phrase === settings.phrase || phrasesFor("en")[index] === settings.phrase,
+);
+settings.phrase = phrasesFor(settings.language)[Math.max(0, phraseIndex)];
 let state: Snapshot = {
   phase: "working",
   remainingSeconds: settings.workMinutes * 60,
@@ -27,7 +33,7 @@ let state: Snapshot = {
     emergencyUnlocks: 0,
   },
   logs: [],
-  phrases,
+  phrases: phrasesFor(settings.language),
   emergencyCount: 0,
   deferredBy: null,
   keyboardProtection: false,
@@ -86,16 +92,22 @@ export async function call<T = Snapshot>(
   } else if (command === "save_settings") {
     if (state.phase === "resting") throw new Error("休息结束后可以修改设置");
     const next = args.settings as Settings;
+    if (next.language !== state.settings.language) {
+      const index = state.phrases.indexOf(next.phrase);
+      if (index >= 0) next.phrase = phrasesFor(next.language)[index];
+    }
     if (
       next.workMinutes < 1 ||
       next.workMinutes > 240 ||
       next.restMinutes < 1 ||
       next.restMinutes > 60 ||
-      !phrases.includes(next.phrase)
+      !["zh-CN", "en"].includes(next.language) ||
+      !phrasesFor(next.language).includes(next.phrase)
     )
       throw new Error("请检查时长，解锁文案只能选择 5 条预设");
     const resetDuration = next.workMinutes !== state.settings.workMinutes;
     state.settings = structuredClone(next);
+    state.phrases = phrasesFor(next.language);
     localStorage.setItem("leafshield-preview", JSON.stringify(next));
     if (resetDuration) reset();
   } else if (command === "toggle_pause") {

@@ -1926,7 +1926,7 @@ dependencies = [
 
 [[package]]
 name = "leafshield"
-version = "0.5.4"
+version = "0.6.0"
 dependencies = [
  "base64 0.23.1",
  "chrono",
@@ -1950,6 +1950,7 @@ dependencies = [
  "chrono",
  "image",
  "serde",
+ "serde_json",
  "sha2",
 ]
 

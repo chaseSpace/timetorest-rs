@@ -1,3 +1,4 @@
+import { html, tr, setLocale, localizeTree } from "./i18n";
 import "./compact.css";
 import { LockScreen } from "./lock-screen";
 import { call, native, subscribe } from "./bridge";
@@ -48,7 +49,7 @@ const toast = (message: string, error = false) => {
     element.setAttribute("role", "status");
     document.body.append(element);
   }
-  element.textContent = message;
+  element.textContent = tr(message);
   element.className = `toast visible ${error ? "error" : ""}`;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => element?.classList.remove("visible"), 4200);
@@ -89,31 +90,39 @@ function updateLive() {
   if (!snapshot) return;
   document
     .querySelectorAll("[data-timer]")
-    .forEach((el) => (el.textContent = time(snapshot.remainingSeconds)));
+    .forEach((el) => (el.textContent = tr(time(snapshot.remainingSeconds))));
   document
     .querySelectorAll("[data-phase]")
-    .forEach((el) => (el.textContent = phaseText(snapshot)));
+    .forEach((el) => (el.textContent = tr(phaseText(snapshot))));
   document
     .querySelectorAll("[data-work-minutes]")
-    .forEach((el) => (el.textContent = String(snapshot.settings.workMinutes)));
+    .forEach(
+      (el) => (el.textContent = tr(String(snapshot.settings.workMinutes))),
+    );
   document
     .querySelectorAll("[data-rest-minutes]")
-    .forEach((el) => (el.textContent = String(snapshot.settings.restMinutes)));
+    .forEach(
+      (el) => (el.textContent = tr(String(snapshot.settings.restMinutes))),
+    );
   document
     .querySelectorAll("[data-stat]")
     .forEach(
       (el) =>
-        (el.textContent = String(
-          (el as HTMLElement).dataset.stat === "focus"
-            ? Math.floor(snapshot.statistics.focusSeconds / 60)
-            : (el as HTMLElement).dataset.stat === "rest"
-              ? snapshot.statistics.completedRests
-              : Math.floor(snapshot.statistics.restSeconds / 60),
+        (el.textContent = tr(
+          String(
+            (el as HTMLElement).dataset.stat === "focus"
+              ? Math.floor(snapshot.statistics.focusSeconds / 60)
+              : (el as HTMLElement).dataset.stat === "rest"
+                ? snapshot.statistics.completedRests
+                : Math.floor(snapshot.statistics.restSeconds / 60),
+          ),
         )),
     );
   const pause = document.querySelector("#pause-text");
   if (pause)
-    pause.textContent = snapshot.phase === "paused" ? "继续专注" : "暂停计时";
+    pause.textContent = tr(
+      snapshot.phase === "paused" ? "继续专注" : "暂停计时",
+    );
   const pauseButton = document.querySelector<HTMLButtonElement>("#pause-timer");
   if (pauseButton)
     pauseButton.disabled = !["working", "paused"].includes(snapshot.phase);
@@ -124,13 +133,21 @@ function updateLive() {
       (snapshot.deferredBy
         ? `正在使用 ${snapshot.deferredBy}，切换到其他程序后开始休息。`
         : "");
-    notice.textContent = text;
+    notice.textContent = tr(text);
     notice.hidden = !text;
   }
   lock?.update(snapshot);
 }
 function receive(value: Snapshot) {
+  const languageChanged =
+    snapshot?.settings.language !== value.settings.language;
   snapshot = value;
+  setLocale(value.settings.language);
+  if (languageChanged) {
+    if (compact) compact.render();
+    else if (lock) renderRest(preview);
+    else localizeTree(app);
+  }
   if (
     !native &&
     !preview &&
@@ -153,12 +170,15 @@ window.addEventListener("close-preview", () => {
 async function boot() {
   try {
     snapshot = await call("get_state");
+    setLocale(snapshot.settings.language);
     if (route === "widget") {
       document.body.className = "widget-body";
       await renderWidget(app, icon, act);
     } else if (route === "warning") {
       document.body.className = "warning-body";
-      app.innerHTML = `<div class="warning-card"><span class="widget-leaf">${icon("leaf")}</span><div><b>给手边的工作，留个结尾。</b><p><span data-timer></span> 后开始休息，记得保存。</p></div><button id="dismiss-warning" aria-label="收起提醒">${icon("close")}</button></div>`;
+      app.innerHTML = html(
+        `<div class="warning-card"><span class="widget-leaf">${icon("leaf")}</span><div><b>给手边的工作，留个结尾。</b><p><span data-timer></span> 后开始休息，记得保存。</p></div><button id="dismiss-warning" aria-label="收起提醒">${icon("close")}</button></div>`,
+      );
       document.querySelector<HTMLButtonElement>("#dismiss-warning")!.onclick =
         () => {
           void act("window_action", { action: "close" });
@@ -173,7 +193,9 @@ async function boot() {
         title: document.querySelector("h1")?.textContent || "",
       });
   } catch (error) {
-    app.innerHTML = `<div class="startup-error"><img src="/leaf.svg" width="56"/><h1>一叶暂时没能启动</h1><p>${esc(String(error))}</p><button class="primary" id="retry">重新连接</button></div>`;
+    app.innerHTML = html(
+      `<div class="startup-error"><img src="/leaf.svg" width="56"/><h1>一叶暂时没能启动</h1><p>${esc(String(error))}</p><button class="primary" id="retry">重新连接</button></div>`,
+    );
     document.querySelector<HTMLButtonElement>("#retry")!.onclick = () =>
       location.reload();
   }
