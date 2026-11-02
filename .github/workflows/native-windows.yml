@@ -26,6 +26,7 @@ jobs:
       - run: cargo test -p leafshield-core -p leafshield-native
       - run: cargo clippy -p leafshield-core -p leafshield-native --all-targets -- -D warnings
       - run: npm run build:native
+      - run: node --test .github/scripts/publish-native-release.test.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: leafshield-native-Windows

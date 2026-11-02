@@ -43,9 +43,26 @@ The application uses native controls and GDI drawing. Running it requires no Web
 
 Custom images may be up to 5 MB, 16 megapixels, and 8192 pixels on either edge. Imported images are normalized to JPEG within 1920×1200 and 500 KB.
 
-## Build and run
+## Download and run
 
-Build the current native preview from source. **The 0.6.x packages on GitHub Releases are historical Tauri builds**, not this branch's native version.
+Download the [Windows native preview 0.7.0-dev.4](https://github.com/chaseSpace/timetorest-rs/releases/tag/win-v0.7.0-dev.4):
+
+| File | Purpose |
+| --- | --- |
+| `leafshield-native-0.7.0-dev.4.exe` | Windows x64 portable preview |
+| `SHA256SUMS.txt` | SHA-256 checksums for the EXE and license |
+| `LICENSE` | MIT license |
+
+Run the EXE directly; installation is not required. This preview is unsigned, so Windows may display a security prompt. Verify it with the checksum file from the same release. **The 0.6.x packages on GitHub Releases are historical Tauri builds.**
+
+1. Exit the older version from its tray menu before running the new EXE.
+2. Choose durations in Timer. Use Preview to view the break screen.
+3. Closing settings keeps the tray and timer running; reopen settings or exit from the tray.
+4. Configure startup in Options. Keep an enabled EXE in a stable location; after moving it, toggle startup again to update the path. Starting this development build does not automatically rewrite existing startup entries.
+
+Data continues to use `%APPDATA%\com.leafshield.desktop`. The first native launch backs up existing settings. Open the data folder from Options to inspect local files.
+
+## Build from source
 
 Windows builds require Rust stable, MSVC C++ Build Tools, and the Windows SDK. Node.js 22+ is also required for the project wrapper commands.
 
@@ -55,7 +72,7 @@ From a checkout of `dev.win`, run:
 npm run build:native
 ```
 
-Generated files:
+Locally generated files:
 
 | File | Purpose |
 | --- | --- |
@@ -68,13 +85,6 @@ You can also build directly with the Rust toolchain. The executable goes to Carg
 ```powershell
 cargo build --release -p leafshield-native
 ```
-
-1. Exit the older version from its tray menu before running the new EXE.
-2. Choose durations in Timer. Use Preview to view the break screen.
-3. Closing settings keeps the tray and timer running; reopen settings or exit from the tray.
-4. Configure startup in Options. Keep an enabled EXE in a stable location; after moving it, toggle startup again to update the path. Starting this development build does not automatically rewrite existing startup entries.
-
-Data continues to use `%APPDATA%\com.leafshield.desktop`. The first native launch backs up existing settings. Open the data folder from Options to inspect local files.
 
 ## Resource usage
 

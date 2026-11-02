@@ -1,0 +1,49 @@
+name: native-release
+
+on:
+  push:
+    tags: ["win-v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: native-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Validate release tag
+        shell: pwsh
+        run: |
+          $manifest = Get-Content -LiteralPath crates/leafshield-native/Cargo.toml -Raw -Encoding UTF8
+          $version = [regex]::Match($manifest, '(?m)^version = "([^"]+)"').Groups[1].Value
+          if ($env:GITHUB_REF_NAME -ne "win-v$version") { throw "Tag/version mismatch" }
+      - name: Use crates.io on the hosted runner
+        shell: pwsh
+        run: Remove-Item -LiteralPath .cargo/config.toml
+      - run: cargo fmt --all -- --check
+      - run: cargo test -p leafshield-core -p leafshield-native
+      - run: cargo clippy -p leafshield-core -p leafshield-native --all-targets -- -D warnings
+      - run: npm run build:native
+      - name: Validate native release publisher
+        run: node --test .github/scripts/publish-native-release.test.mjs
+      - name: Publish Windows native pre-release
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { pathToFileURL } = require('node:url');
+            const path = require('node:path');
+            const moduleUrl = pathToFileURL(path.join(process.env.GITHUB_WORKSPACE, '.github/scripts/publish-native-release.mjs'));
+            const { default: publish } = await import(moduleUrl.href);
+            await publish({ github, context, core });

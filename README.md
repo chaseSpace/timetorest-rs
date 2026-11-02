@@ -43,9 +43,26 @@
 
 自定义背景原文件最大 5 MB、1600 万像素、任一边不超过 8192 像素；导入后规范化为 1920×1200 以内、不超过 500 KB 的 JPEG。
 
-## 构建与运行
+## 下载与运行
 
-当前原生测试版从源码构建。GitHub Releases 中的 **0.6.x 属于历史 Tauri 版本**，不代表本分支的原生版。
+从 [Windows 原生预览版 0.7.0-dev.4](https://github.com/chaseSpace/timetorest-rs/releases/tag/win-v0.7.0-dev.4) 下载：
+
+| 文件 | 用途 |
+| --- | --- |
+| `leafshield-native-0.7.0-dev.4.exe` | Windows x64 便携测试程序 |
+| `SHA256SUMS.txt` | EXE 和许可文件的 SHA-256 校验值 |
+| `LICENSE` | MIT 许可 |
+
+下载 EXE 后直接运行，无需安装。该预览版没有代码签名，Windows 可能显示安全提示，请使用同一发行中的校验文件核对下载内容。GitHub Releases 中的 **0.6.x 属于历史 Tauri 版本**。
+
+1. 从托盘退出旧版，再运行新的 EXE。
+2. 在“定时器”选择时间组合；“预览锁屏”可查看休息界面。
+3. 关闭设置窗口后，托盘和计时继续运行；从托盘重新打开或退出。
+4. 在“选项”设置开机启动。启用后请把 EXE 放在固定目录；移动程序后重新切换该选项以更新路径。开发版启动时不自动改写已有启动项。
+
+配置沿用 `%APPDATA%\com.leafshield.desktop`。首次运行原生版会备份已有配置；也可从“选项 → 打开数据目录”查看本机数据。
+
+## 从源码构建
 
 Windows 构建需要 Rust stable、MSVC C++ Build Tools 和 Windows SDK。使用项目命令时另需 Node.js 22+。
 
@@ -55,7 +72,7 @@ Windows 构建需要 Rust stable、MSVC C++ Build Tools 和 Windows SDK。使用
 npm run build:native
 ```
 
-生成文件：
+本地生成文件：
 
 | 文件 | 用途 |
 | --- | --- |
@@ -68,13 +85,6 @@ npm run build:native
 ```powershell
 cargo build --release -p leafshield-native
 ```
-
-1. 从托盘退出旧版，再运行新的 EXE。
-2. 在“定时器”选择时间组合；“预览锁屏”可查看休息界面。
-3. 关闭设置窗口后，托盘和计时继续运行；从托盘重新打开或退出。
-4. 在“选项”设置开机启动。启用后请把 EXE 放在固定目录；移动程序后重新切换该选项以更新路径。开发版启动时不自动改写已有启动项。
-
-配置沿用 `%APPDATA%\com.leafshield.desktop`。首次运行原生版会备份已有配置；也可从“选项 → 打开数据目录”查看本机数据。
 
 ## 资源占用
 
