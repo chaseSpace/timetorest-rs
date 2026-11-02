@@ -1,5 +1,6 @@
 use chrono::Local;
 use serde::{Deserialize, Serialize};
+pub mod colour;
 pub mod docking;
 pub mod locale;
 pub mod wallpaper;
@@ -209,10 +210,16 @@ impl Engine {
         );
         self.data.logs.truncate(200);
     }
+    pub fn remaining_seconds(&self) -> u64 {
+        self.remaining_ms.div_ceil(1000)
+    }
+    pub fn emergency_count(&self) -> u32 {
+        self.emergency_count
+    }
     pub fn snapshot(&self) -> Snapshot {
         Snapshot {
             phase: self.phase,
-            remaining_seconds: self.remaining_ms.div_ceil(1000),
+            remaining_seconds: self.remaining_seconds(),
             total_seconds: if self.phase == Phase::Resting {
                 self.data.settings.rest_minutes as u64 * 60
             } else {

@@ -58,6 +58,20 @@ else if (mode === "check") {
     "-D",
     "warnings",
   ]);
+} else if (mode === "native") {
+  if (process.platform !== "win32") throw new Error("The native development UI currently targets Windows.");
+  run(cargo, ["build", "--release", "-p", "leafshield-native"]);
+  const manifest = readFileSync("crates/leafshield-native/Cargo.toml", "utf8");
+  const nativeVersion = /^version = "([^"]+)"/m.exec(manifest)?.[1];
+  if (!nativeVersion) throw new Error("Missing native version");
+  const directory = resolve("artifacts/native-dev");
+  mkdirSync(directory, { recursive: true });
+  const name = `leafshield-native-${nativeVersion}.exe`;
+  copyFileSync(join(env.CARGO_TARGET_DIR || resolve("target"), "release", "leafshield-native.exe"), join(directory, name));
+  copyFileSync("LICENSE", join(directory, "LICENSE"));
+  const entries = [name, "LICENSE"].map(file => `${createHash("sha256").update(readFileSync(join(directory, file))).digest("hex")}  ${file}`);
+  writeFileSync(join(directory, "SHA256SUMS.txt"), entries.join("\n") + "\n");
+  console.log(`Native Windows development build: ${join(directory, name)}`);
 } else if (mode === "dev") run(process.execPath, [cli, "dev"]);
 else if (mode === "smoke") {
   const exe = join(

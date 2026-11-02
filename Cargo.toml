@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/leafshield-core", "src-tauri"]
+members = ["crates/leafshield-core", "crates/leafshield-native", "src-tauri"]
 resolver = "2"
 
 [profile.release]

@@ -9,6 +9,8 @@
     "build:web": "tsc --noEmit && vite build",
     "build": "node scripts/build.mjs portable",
     "build:installer": "node scripts/build.mjs installer",
+    "build:native": "node scripts/build.mjs native",
+    "test:native-ui": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-native-ui-windows.ps1",
     "check:rust": "node scripts/build.mjs check",
     "test:rust": "node scripts/build.mjs test",
     "test:ui": "npm run build:web && playwright test",
