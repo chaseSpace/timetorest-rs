@@ -1,6 +1,6 @@
 # Windows 原生开发版
 
-开发分支：`dev.win`。当前版本：`0.7.0-dev.4`，当前仅支持 Windows 原生界面，暂不支持 macOS。
+当前版本：`0.7.0-dev.4`。源码已从 `dev.win` 合并到 `main`，当前仅支持 Windows 原生界面，暂不支持 macOS。
 
 ## 构建与运行
 

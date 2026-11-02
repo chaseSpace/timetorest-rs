@@ -4,7 +4,7 @@
 
 一个用 **Rust + Win32** 编写的 Windows 护眼休息工具。支持定时休息、色温与亮度调节、悬浮倒计时，以及需要手动输入文案才能提前结束的休息锁屏。
 
-当前原生测试版本：**0.7.0-dev.4**，开发分支：**`dev.win`**。面向 **Windows 11 x64**，Windows 10 兼容性尚未完整验证；**暂不支持 macOS 和 Linux**。
+当前原生测试版本：**0.7.0-dev.4**，源码已合并到 **`main`**，Windows 开发分支保留为 `dev.win`。面向 **Windows 11 x64**，Windows 10 兼容性尚未完整验证；**暂不支持 macOS 和 Linux**。
 
 程序使用原生控件与 GDI 绘图，运行时无需 WebView2、浏览器或 Node.js，也不启动 HTTP 服务。
 
@@ -68,7 +68,7 @@
 
 Windows 构建需要 Rust stable、MSVC C++ Build Tools 和 Windows SDK。使用项目命令时另需 Node.js 22+。
 
-在 `dev.win` 分支的仓库目录执行：
+在 `main` 分支的仓库目录执行：
 
 ```powershell
 npm run build:native

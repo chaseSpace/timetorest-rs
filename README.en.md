@@ -4,7 +4,7 @@
 
 A **Rust + Win32** break reminder for Windows, with screen temperature and brightness controls, a floating countdown, and full-screen breaks that require a manually typed phrase to end early.
 
-Current native preview: **0.7.0-dev.4**, on branch **`dev.win`**. Targets **Windows 11 x64**; Windows 10 compatibility has not been fully verified. **macOS and Linux are not currently supported.**
+Current native preview: **0.7.0-dev.4**. The source is merged into **`main`**, with `dev.win` retained as the Windows development branch. Targets **Windows 11 x64**; Windows 10 compatibility has not been fully verified. **macOS and Linux are not currently supported.**
 
 The application uses native controls and GDI drawing. Running it requires no WebView2, browser, or Node.js, and starts no HTTP server.
 
@@ -68,7 +68,7 @@ Data continues to use `%APPDATA%\com.leafshield.desktop`. The first native launc
 
 Windows builds require Rust stable, MSVC C++ Build Tools, and the Windows SDK. Node.js 22+ is also required for the project wrapper commands.
 
-From a checkout of `dev.win`, run:
+From a checkout of `main`, run:
 
 ```powershell
 npm run build:native

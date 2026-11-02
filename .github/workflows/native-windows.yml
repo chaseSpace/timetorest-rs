@@ -1,7 +1,7 @@
 name: native-windows
 on:
   push:
-    branches: [dev.win]
+    branches: [main, dev.win]
   pull_request:
     paths:
       - "crates/**"
