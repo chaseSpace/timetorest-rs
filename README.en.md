@@ -8,6 +8,8 @@ Current native preview: **0.7.0-dev.4**, on branch **`dev.win`**. Targets **Wind
 
 The application uses native controls and GDI drawing. Running it requires no WebView2, browser, or Node.js, and starts no HTTP server.
 
+The current native Windows build uses **under 3 MiB of private memory** while resident, and its portable EXE is **under 2 MiB**. These figures are measured from `0.7.0-dev.4`; see Resource usage for the accounting details.
+
 ## Screenshots
 
 ### Screen temperature and brightness
@@ -88,7 +90,16 @@ cargo build --release -p leafshield-native
 
 ## Resource usage
 
-One resident snapshot of `0.7.0-dev.4` on the development machine measured about **2.2 MiB private working set**, **2.8 MiB private commit**, and **20.9 MiB total working set** including shared system pages. Usage varies with windows, photographs, displays, and system state; loading break backgrounds increases memory use.
+One resident snapshot of `0.7.0-dev.4` on the development machine measured:
+
+| Metric | Measured value |
+| --- | ---: |
+| Private working set | **2.19 MiB** |
+| Private commit | **2.84 MiB** |
+| Native Windows portable EXE | **1.65 MiB** (1,733,632-byte GitHub build) |
+| Total working set | 20.93 MiB |
+
+This supports the compact description: **under 3 MiB of private memory on Windows, with an executable under 2 MiB**. Total working set includes shared Windows DLL pages and does not represent memory owned exclusively by the application. Usage varies with windows, photographs, displays, and system state; loading break backgrounds increases memory use.
 
 ## Technology
 

@@ -6,6 +6,8 @@
 
 本版本通过 39 项 Rust 测试和 18 项 Windows 原生界面自动检查。真实双屏、输入法、系统调色恢复和开机登录流程仍建议手动验证。
 
+本机常驻状态测得专用内存低于 3 MiB；GitHub CI 生成的 Windows x64 便携 EXE 低于 2 MiB。总工作集包含系统共享页，不属于同一统计口径。
+
 下载 `leafshield-native-0.7.0-dev.4.exe` 后可直接运行。程序未进行代码签名，Windows 可能显示安全提示；请使用同一发行中的 `SHA256SUMS.txt` 核对文件。
 
 作者：Leigg（磊哥哥）
