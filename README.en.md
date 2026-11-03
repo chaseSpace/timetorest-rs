@@ -2,11 +2,11 @@
 
 [简体中文](README.md) | English · **Author: Leigg**
 
-A **Rust + Win32** break reminder for Windows, with screen temperature and brightness controls, a floating countdown, and full-screen breaks that require a manually typed phrase to end early.
+A lightweight break reminder with screen temperature and brightness controls, a floating countdown, and full-screen breaks that require a manually typed phrase to end early. To reduce memory usage, the UI is implemented with each platform's native controls.
 
-Current stable release: **0.7.0**. The source is on **`main`**, with `dev.win` retained as the Windows development branch. Targets **Windows 11 x64**; Windows 10 compatibility has not been fully verified. **macOS and Linux are not currently supported.**
+Current stable release: **0.7.0**. The source is on **`main`**, with `dev.win` retained as the Windows development branch. Targets **Windows 11 x64**; Windows 10 compatibility has not been fully verified. **The Mac version is in development; Linux is not currently supported.**
 
-The application uses native controls and GDI drawing. Running it requires no WebView2, browser, or Node.js, and starts no HTTP server.
+The Windows build requires no WebView2, browser, or Node.js at runtime, and starts no HTTP server.
 
 The current native Windows build uses **under 3 MiB of private memory** while resident, and its portable EXE is **under 2 MiB**. These figures are measured from `0.7.0-dev.4`; see Resource usage for the accounting details.
 
@@ -106,8 +106,8 @@ This supports the compact description: **under 3 MiB of private memory on Window
 | Area | Technology |
 | --- | --- |
 | Application and core | Rust 2024 edition, `leafshield-core` |
-| Windows UI | Win32, Common Controls v6, GDI, DWM, `windows` / `windows-sys` |
-| System integration | Windows color matrices, keyboard hooks, system tray, COM file dialogs and shortcut resolution, current-user startup entries |
+| UI | Platform-native controls; the Windows version is available and the Mac version is in development |
+| System integration | Windows color matrices, keyboard hooks, system tray, file dialogs and shortcut resolution, current-user startup entries |
 | Data and images | `serde` / `serde_json`, `chrono`, `image`, `sha2` |
 | Validation and builds | Rust tests, rustfmt, Clippy, PowerShell / C# native UI automation, GitHub Actions |
 

@@ -2,11 +2,11 @@
 
 简体中文 | [English](README.en.md) · **作者：Leigg**
 
-一个用 **Rust + Win32** 编写的 Windows 护眼休息工具。支持定时休息、色温与亮度调节、悬浮倒计时，以及需要手动输入文案才能提前结束的休息锁屏。
+一款轻量的护眼休息工具，支持定时休息、色温与亮度调节、悬浮倒计时，以及需要手动输入文案才能提前结束的休息锁屏。为了降低内存占用，UI 使用平台原生控件实现。
 
-当前正式版本：**0.7.0**，源码位于 **`main`**，Windows 开发分支保留为 `dev.win`。面向 **Windows 11 x64**，Windows 10 兼容性尚未完整验证；**暂不支持 macOS 和 Linux**。
+当前正式版本：**0.7.0**，源码位于 **`main`**，Windows 开发分支保留为 `dev.win`。面向 **Windows 11 x64**，Windows 10 兼容性尚未完整验证；**Mac 端正在开发中，暂不支持 Linux**。
 
-程序使用原生控件与 GDI 绘图，运行时无需 WebView2、浏览器或 Node.js，也不启动 HTTP 服务。
+Windows 版运行时无需 WebView2、浏览器或 Node.js，也不启动 HTTP 服务。
 
 当前 Windows 原生版的常驻专用内存 **低于 3 MiB**，便携 EXE **低于 2 MiB**。数值来自 `0.7.0-dev.4` 实测，详细口径见“资源占用”。
 
@@ -106,8 +106,8 @@ cargo build --release -p leafshield-native
 | 部分 | 使用技术 |
 | --- | --- |
 | 应用与业务核心 | Rust 2024 edition、`leafshield-core` |
-| Windows 界面 | Win32、Common Controls v6、GDI、DWM，`windows` / `windows-sys` |
-| 系统功能 | Windows 颜色矩阵、键盘钩子、系统托盘、COM 文件选择与快捷方式解析、当前用户启动项 |
+| UI | 使用平台原生控件实现；Windows 版已发布，Mac 端正在开发中 |
+| 系统功能 | Windows 颜色矩阵、键盘钩子、系统托盘、文件选择与快捷方式解析、当前用户启动项 |
 | 数据与图片 | `serde` / `serde_json`、`chrono`、`image`、`sha2` |
 | 检查与构建 | Rust 测试、rustfmt、Clippy、PowerShell / C# 原生界面自动检查、GitHub Actions |
 
