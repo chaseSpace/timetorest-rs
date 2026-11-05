@@ -1,3 +1,4 @@
+mod cursor;
 mod display;
 mod picker;
 mod rest;

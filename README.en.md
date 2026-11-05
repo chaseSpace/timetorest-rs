@@ -4,11 +4,11 @@
 
 A lightweight break reminder with screen temperature and brightness controls, a floating countdown, and full-screen breaks that require a manually typed phrase to end early. To reduce memory usage, the UI is implemented with each platform's native controls.
 
-Current stable release: **0.7.0**. The source is on **`main`**, with `dev.win` retained as the Windows development branch. Targets **Windows 11 x64**; Windows 10 compatibility has not been fully verified. **The Mac version is in development; Linux is not currently supported.**
+Current stable release: **0.7.1**. The source is on **`main`**, with `dev.win` retained as the Windows development branch. Targets **Windows 11 x64**; Windows 10 compatibility has not been fully verified. **The Mac version is in development; Linux is not currently supported.**
 
 The Windows build requires no WebView2, browser, or Node.js at runtime, and starts no HTTP server.
 
-The current native Windows build uses **under 3 MiB of private memory** while resident, and its portable EXE is **under 2 MiB**. These figures are measured from `0.7.0-dev.4`; see Resource usage for the accounting details.
+A measured `0.7.0-dev.4` snapshot used **under 3 MiB of private memory** while resident, with a portable EXE **under 2 MiB**. Resident memory has not been remeasured for `0.7.1`; see Resource usage for the accounting details.
 
 ## Screenshots
 
@@ -33,7 +33,7 @@ The current native Windows build uses **under 3 MiB of private memory** while re
 | Feature | Current behavior |
 | --- | --- |
 | Work and break timer | Defaults to 45 minutes of work and a 2-minute break; presets `25/2`, `45/2`, `60/3`, and `90/5`, plus custom durations, pause, resume, and immediate breaks |
-| Screen adjustment | 1500–6500 K and 20–100% brightness; defaults to 5000 K / 80%; moving left makes the screen warmer; applies to all displays |
+| Screen adjustment | 1500–6500 K and 20–100% brightness; defaults to 5000 K / 80%; moving left makes the screen warmer; applies to all displays and common system mouse pointers |
 | Multi-monitor breaks | An always-on-top break window on each display, ending automatically; the cursor and unlock area start hidden, with input revealed on the active screen |
 | Mindful unlock | Five fixed phrases; type the complete phrase to end a break early. Prompts cannot be copied, pasting is blocked, and mismatches receive a red underline |
 | Emergency unlock | Optional, with instructions: 50 manual keystrokes within 20 seconds. A pause over 2 seconds or a timeout resets the count; holding a key does not repeat-count; successful unlocks are logged |
@@ -45,13 +45,15 @@ The current native Windows build uses **under 3 MiB of private memory** while re
 
 Custom images may be up to 5 MB, 16 megapixels, and 8192 pixels on either edge. Imported images are normalized to JPEG within 1920×1200 and 500 KB.
 
+Mouse pointers retain the current theme's size, hotspot, and transparency, and are restored when screen adjustment is disabled or the app exits normally. Animated and app-specific cursors are excluded. If the user changes the pointer theme, adjustment stops for affected pointers.
+
 ## Download and run
 
-Download the [Windows stable release 0.7.0](https://github.com/chaseSpace/timetorest-rs/releases/tag/v0.7.0):
+Download the [Windows stable release 0.7.1](https://github.com/chaseSpace/timetorest-rs/releases/tag/v0.7.1):
 
 | File | Purpose |
 | --- | --- |
-| `leafshield-native-0.7.0.exe` | Windows x64 portable executable |
+| `leafshield-native-0.7.1.exe` | Windows x64 portable executable |
 | `SHA256SUMS.txt` | SHA-256 checksums for the EXE and license |
 | `LICENSE` | MIT license |
 
@@ -78,7 +80,7 @@ Locally generated files:
 
 | File | Purpose |
 | --- | --- |
-| `artifacts/native-dev/leafshield-native-0.7.0.exe` | Windows x64 portable executable |
+| `artifacts/native-dev/leafshield-native-0.7.1.exe` | Windows x64 portable executable |
 | `artifacts/native-dev/SHA256SUMS.txt` | SHA-256 checksums for the EXE and license |
 | `artifacts/native-dev/LICENSE` | MIT license |
 
@@ -99,7 +101,7 @@ One resident snapshot of `0.7.0-dev.4` on the development machine measured:
 | Native Windows portable EXE | **1.65 MiB** (1,733,632-byte GitHub build) |
 | Total working set | 20.93 MiB |
 
-This supports the compact description: **under 3 MiB of private memory on Windows, with an executable under 2 MiB**. Total working set includes shared Windows DLL pages and does not represent memory owned exclusively by the application. Usage varies with windows, photographs, displays, and system state; loading break backgrounds increases memory use.
+These measurements describe the older build; resident memory has not been remeasured after adding pointer adjustment in `0.7.1`. Total working set includes shared Windows DLL pages and does not represent memory owned exclusively by the application. Usage varies with windows, photographs, displays, and system state; loading break backgrounds increases memory use.
 
 ## Technology
 
@@ -120,7 +122,7 @@ cargo clippy -p leafshield-core -p leafshield-native --all-targets -- -D warning
 npm run test:native-ui
 ```
 
-The current build passed **39 Rust tests and 18 automated UI checks**. One test that changes desktop colors is ignored by default. UI checks cover slider rails, click placement, dragging and stale pixels, bilingual emergency instructions, tray menus, and settings windows.
+`0.7.1` passed **44 Rust tests**, including five pointer color, geometry, and restoration-protection tests. One test that changes desktop colors is ignored by default. The 18 automated UI checks from `0.7.0-dev.4` covered slider rails, click placement, dragging and stale pixels, bilingual emergency instructions, tray menus, and settings windows; they were not rerun for this release. Actual pointer synchronization and restoration on exit still require manual acceptance.
 
 UI automation uses a temporary profile with global keyboard hooks and screen adjustment disabled, and does not rewrite normal startup entries. These checks do not replace real multi-monitor break, IME, color restoration, or login-startup acceptance. See the [native Windows development notes](docs/native-windows.md).
 

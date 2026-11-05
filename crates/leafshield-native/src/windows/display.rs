@@ -201,6 +201,7 @@ mod native {
         let worker = std::thread::spawn(|| {
             let result = (|| -> Result<(), String> {
                 let mut session = Session::new()?;
+                let mut cursors = super::super::cursor::Session::default();
                 let mut transition = Transition::new(Instant::now());
                 let mut revision = u64::MAX;
                 loop {
@@ -218,8 +219,10 @@ mod native {
                     }
                     let rgb = transition.sample(now);
                     session.apply(rgb)?;
+                    let cursor_error = cursors.apply(rgb).err().map(str::to_owned);
                     {
                         let mut value = state().lock().unwrap();
+                        value.error = cursor_error;
                         value.active = !colour::same(rgb, NEUTRAL);
                         value.monitors = monitors();
                         value.rgb = rgb;
